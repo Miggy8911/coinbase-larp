@@ -31,7 +31,7 @@ export function AssetSheet() {
   return (
     <div className="scroll flex-1 px-4 pb-8">
       <div className="flex items-center gap-3">
-        <TokenGlyph symbol={t.symbol} color={t.color} size={44} />
+        <TokenGlyph id={t.id} symbol={t.symbol} color={t.color} size={44} />
         <div>
           <p className="text-[13px] text-white/50">{t.name}</p>
           <p className="text-[22px] font-semibold">{t.symbol}</p>

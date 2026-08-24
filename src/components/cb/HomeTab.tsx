@@ -10,7 +10,7 @@ import { TokenGlyph } from "../TokenGlyph";
 import { mixChart, useLiveTrail } from "@/lib/chart-trail";
 import { useApp } from "@/lib/app-context";
 import { useHoldings } from "@/lib/quotes-store";
-import { cn, formatPct, formatUsd, portfolioSeries, sliceSpark } from "@/lib/utils";
+import { cn, formatPct, formatPrice, formatUsd, portfolioSeries, sliceSpark } from "@/lib/utils";
 
 const PERIODS = [
   { id: "1H", frac: 1 / 168, change: "change1h" as const },
@@ -52,108 +52,103 @@ export function HomeTab() {
   const down = periodChange < 0;
   const line = down ? "#F0616D" : "#3DDC97";
   const movers = [...tokens].sort((a, b) => Math.abs(b.change24h) - Math.abs(a.change24h)).slice(0, 5);
+  const deltaUsd = meta.id === "1D" ? dayChangeUsd : (totalUsd * periodChange) / 100;
 
   return (
     <div className="scroll flex h-full flex-col pb-5">
-      <header className="flex items-center justify-between px-4 pt-2">
-        <CoinbaseMark size={32} />
-        <div className="flex items-center gap-3">
+      <header className="flex items-center justify-between px-4 pt-3">
+        <CoinbaseMark size={28} />
+        <div className="flex items-center gap-4">
           {state.showDisclaimers && (
             <span className="text-[11px] text-white/40">{pricesLive ? marketSource : "offline"}</span>
           )}
-          <button type="button" className="tap text-white/80" aria-label="Search">
-            <Search size={20} />
+          <button type="button" className="tap text-white" aria-label="Search">
+            <Search size={22} strokeWidth={2} />
           </button>
-          <button type="button" onClick={() => setOverlay("receive")} className="tap text-white/80">
-            <QrCode size={20} />
+          <button type="button" onClick={() => setOverlay("receive")} className="tap text-white" aria-label="Scan">
+            <QrCode size={22} strokeWidth={2} />
           </button>
-          <button type="button" onClick={() => setOverlay("profile")} className="tap text-white/80">
-            <Bell size={20} />
+          <button type="button" onClick={() => setOverlay("profile")} className="tap text-white" aria-label="Alerts">
+            <Bell size={22} strokeWidth={2} />
           </button>
           <button
             type="button"
             onClick={() => setOverlay("profile")}
             className="tap flex h-8 w-8 items-center justify-center rounded-full bg-[#0052FF] text-[13px] font-semibold"
           >
-            {name.slice(0, 1)}
+            {name.slice(0, 1).toUpperCase()}
           </button>
         </div>
       </header>
 
-      <p className="mt-4 px-4 text-[13px] text-white/50">Your balance</p>
-      <p className="px-4 text-[40px] font-semibold leading-none tracking-tight">
+      <p className="mt-5 px-4 text-[14px] text-white/55">Your balance</p>
+      <p className="px-4 text-[42px] font-semibold leading-none tracking-[-0.04em]">
         <SmoothUsd value={totalUsd} />
       </p>
-      <p className={cn("mt-2 px-4 text-[15px] font-medium tabular-nums", down ? "text-[#F0616D]" : "text-[#3DDC97]")}>
-        {formatUsd(meta.id === "1D" ? dayChangeUsd : (totalUsd * periodChange) / 100)} ({formatPct(periodChange)})
+      <p className={cn("mt-2 px-4 text-[16px] font-medium tabular-nums", down ? "text-[#F0616D]" : "text-[#3DDC97]")}>
+        {deltaUsd > 0 ? "+" : ""}
+        {formatUsd(deltaUsd)} ({formatPct(periodChange)})
       </p>
 
-      <div className="mt-3">
-        <AreaChart points={series} color={line} height={152} />
+      <div className="mt-4">
+        <AreaChart points={series} color={line} height={148} />
       </div>
-      <div className="mt-1 flex justify-between px-3 text-[12px] font-medium text-white/45">
+      <div className="mt-1 flex justify-between px-4 text-[13px] font-medium text-white/45">
         {PERIODS.map((p) => (
           <button
             key={p.id}
             type="button"
             onClick={() => setPeriod(p.id)}
-            className={cn("tap rounded-full px-2 py-1", period === p.id && "bg-white/10 text-white")}
+            className={cn("tap min-w-[36px] rounded-full px-2.5 py-1", period === p.id && "bg-white/10 text-white")}
           >
             {p.id}
           </button>
         ))}
       </div>
 
-      <div className="mt-5 grid grid-cols-5 gap-1 px-2">
-        <Round label="Buy" onClick={() => setOverlay("buy")} icon={<Plus size={18} strokeWidth={2.4} />} />
-        <Round label="Sell" onClick={() => setOverlay("sell")} icon={<Minus size={18} strokeWidth={2.4} />} />
-        <Round label="Convert" onClick={() => setOverlay("convert")} icon={<Repeat2 size={18} strokeWidth={2.2} />} />
-        <Round label="Send" onClick={() => setOverlay("send")} icon={<ArrowUpRight size={18} strokeWidth={2.2} />} />
+      <div className="mt-6 grid grid-cols-5 gap-1 px-3">
+        <Round label="Buy" onClick={() => setOverlay("buy")} icon={<Plus size={20} strokeWidth={2.3} />} />
+        <Round label="Sell" onClick={() => setOverlay("sell")} icon={<Minus size={20} strokeWidth={2.3} />} />
+        <Round label="Convert" onClick={() => setOverlay("convert")} icon={<Repeat2 size={19} strokeWidth={2.2} />} />
+        <Round label="Send" onClick={() => setOverlay("send")} icon={<ArrowUpRight size={20} strokeWidth={2.2} />} />
         <Round
           label="Receive"
           onClick={() => setOverlay("receive")}
-          icon={<ArrowDownLeft size={18} strokeWidth={2.2} />}
+          icon={<ArrowDownLeft size={20} strokeWidth={2.2} />}
         />
       </div>
 
-      <section className="mt-7">
-        <p className="px-4 text-[16px] font-semibold">Today&apos;s movers</p>
-        <ul className="mt-1">
+      <section className="mt-8">
+        <p className="px-4 text-[18px] font-semibold">Today&apos;s movers</p>
+        <div className="rail mt-3 px-4 pb-1">
           {movers.map((t) => {
             const neg = t.change24h < 0;
             return (
-              <li key={t.id}>
-                <button
-                  type="button"
-                  onClick={() => openAsset(t.id)}
-                  className="tap flex w-full items-center gap-3 px-4 py-3 text-left"
-                >
-                  <TokenGlyph symbol={t.symbol} color={t.color} size={32} />
-                  <div className="min-w-0 flex-1">
-                    <div className="flex justify-between text-[15px] font-medium">
-                      <span>{t.name}</span>
-                      <span className={cn("tabular-nums", neg ? "text-[#F0616D]" : "text-[#3DDC97]")}>
-                        {formatPct(t.change24h)}
-                      </span>
-                    </div>
-                    <p className="text-[13px] text-white/45">{t.symbol}</p>
-                  </div>
-                </button>
-              </li>
+              <button
+                key={t.id}
+                type="button"
+                onClick={() => openAsset(t.id)}
+                className="tap w-[138px] shrink-0 rounded-2xl bg-[#16181D] p-3 text-left"
+              >
+                <TokenGlyph id={t.id} symbol={t.symbol} color={t.color} size={32} />
+                <p className="mt-2 text-[15px] font-medium">{t.symbol}</p>
+                <p className={cn("text-[15px] font-semibold tabular-nums", neg ? "text-[#F0616D]" : "text-[#3DDC97]")}>
+                  {formatPct(t.change24h)}
+                </p>
+              </button>
             );
           })}
-        </ul>
+        </div>
       </section>
 
-      <div className="mt-6 flex items-center justify-between px-4">
-        <p className="text-[16px] font-semibold">Watchlist</p>
-        <button type="button" onClick={() => setTab("markets")} className="tap text-[13px] text-[#6B9CFF]">
+      <div className="mt-7 flex items-center justify-between px-4">
+        <p className="text-[18px] font-semibold">Watchlist</p>
+        <button type="button" onClick={() => setTab("markets")} className="tap text-[14px] font-medium text-[#578BFA]">
           See all
         </button>
       </div>
       <ul>
         {tokens.slice(0, 8).map((t) => {
-          const usd = t.amount * t.priceUsd;
           const neg = t.change24h < 0;
           return (
             <li key={t.id}>
@@ -162,23 +157,18 @@ export function HomeTab() {
                 onClick={() => openAsset(t.id)}
                 className="tap flex w-full items-center gap-3 px-4 py-3 text-left"
               >
-                <TokenGlyph symbol={t.symbol} color={t.color} />
+                <TokenGlyph id={t.id} symbol={t.symbol} color={t.color} />
                 <div className="min-w-0 flex-1">
-                  <div className="flex justify-between text-[15px] font-medium">
-                    <span>{t.name}</span>
-                    <span className="tabular-nums">{formatUsd(usd)}</span>
-                  </div>
-                  <div className="mt-0.5 flex justify-between text-[13px] text-white/45">
-                    <span>
-                      {t.symbol}
-                      {t.rank ? ` · #${t.rank}` : ""}
-                    </span>
-                    <span className={cn("tabular-nums", neg ? "text-[#F0616D]" : "text-[#3DDC97]")}>
-                      {formatPct(t.change24h)}
-                    </span>
-                  </div>
+                  <p className="text-[16px] font-medium">{t.name}</p>
+                  <p className="text-[13px] text-white/45">{t.symbol}</p>
                 </div>
                 <Sparkline points={sliceSpark(t.sparkline, 0.3)} color={neg ? "#F0616D" : "#3DDC97"} />
+                <div className="min-w-[88px] text-right">
+                  <p className="text-[16px] font-medium tabular-nums">{formatPrice(t.priceUsd)}</p>
+                  <p className={cn("text-[13px] tabular-nums", neg ? "text-[#F0616D]" : "text-[#3DDC97]")}>
+                    {formatPct(t.change24h)}
+                  </p>
+                </div>
               </button>
             </li>
           );
@@ -191,10 +181,10 @@ export function HomeTab() {
 function Round({ label, onClick, icon }: { label: string; onClick: () => void; icon: ReactNode }) {
   return (
     <button type="button" onClick={onClick} className="tap flex flex-col items-center gap-2">
-      <span className="flex h-12 w-12 items-center justify-center rounded-full bg-[#1C1F26] text-white">
+      <span className="flex h-[52px] w-[52px] items-center justify-center rounded-full bg-[#1C1F26] text-white">
         {icon}
       </span>
-      <span className="text-[11px] text-white/80">{label}</span>
+      <span className="text-[12px] text-white/85">{label}</span>
     </button>
   );
 }

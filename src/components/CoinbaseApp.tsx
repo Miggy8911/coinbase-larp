@@ -1,7 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { ArrowLeftRight, Home, LayoutGrid, Send, Wallet } from "lucide-react";
+import { ArrowLeftRight, ChartPie, Compass, Home, Send } from "lucide-react";
 import { useApp } from "@/lib/app-context";
 import { Onboard } from "./cb/Onboard";
 import { HomeTab } from "./cb/HomeTab";
@@ -59,8 +59,8 @@ export function CoinbaseApp() {
             <Nav active={tab === "home"} label="Home" onClick={() => setTab("home")}>
               <Home size={22} />
             </Nav>
-            <Nav active={tab === "markets"} label="Markets" onClick={() => setTab("markets")}>
-              <LayoutGrid size={22} />
+            <Nav active={tab === "markets"} label="Explore" onClick={() => setTab("markets")}>
+              <Compass size={22} />
             </Nav>
             <Nav active={tab === "trade"} label="Trade" onClick={() => setTab("trade")} accent>
               <ArrowLeftRight size={20} />
@@ -69,7 +69,7 @@ export function CoinbaseApp() {
               <Send size={22} />
             </Nav>
             <Nav active={tab === "assets"} label="Assets" onClick={() => setTab("assets")}>
-              <Wallet size={22} />
+              <ChartPie size={22} />
             </Nav>
           </nav>
         </>

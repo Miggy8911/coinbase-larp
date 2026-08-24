@@ -19,7 +19,7 @@ export function TradeTab() {
 
   return (
     <div className="scroll flex h-full flex-col px-4 pt-4">
-      <h1 className="text-[22px] font-semibold">Trade</h1>
+      <h1 className="text-[28px] font-semibold">Trade</h1>
       <div className="mt-3 flex rounded-full bg-[#1e2026] p-1 text-[13px] font-semibold">
         {(["buy", "sell", "convert"] as const).map((m) => (
           <button
@@ -115,7 +115,7 @@ export function PayTab() {
   const { state, setOverlay } = useApp();
   return (
     <div className="flex h-full flex-col">
-      <h1 className="px-4 pt-4 text-[22px] font-semibold">Pay</h1>
+      <h1 className="px-4 pt-4 text-[28px] font-semibold">Pay</h1>
       <Note className="px-4 text-[13px] text-white/45">Send or receive. Completes only on this device.</Note>
       <div className="mt-4 grid grid-cols-2 gap-2 px-4">
         <button
