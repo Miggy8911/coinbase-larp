@@ -2,7 +2,7 @@ import type { CapacitorConfig } from "@capacitor/cli";
 
 const config: CapacitorConfig = {
   appId: "com.larpsim.wallet",
-  appName: "LarpSim",
+  appName: "CB LARP",
   webDir: "out",
   ios: {
     contentInset: "automatic",

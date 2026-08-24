@@ -1,6 +1,14 @@
-# LARP wallet simulator
+# Coinbase-style LARP simulator
 
-Unofficial Phantom / Exodus / Ledger / Coinbase skins for screenshots. **Amounts are fake. USD prices and 24h percents are live, read-only market data.** No keys, no broadcasts. Not affiliated with those companies.
+Unofficial lookalike of the Coinbase retail app for screenshots. **You type a fake identity and bag. Prices are live. Sends/trades only update this device and mint a random transaction ID.**
+
+Not affiliated with Coinbase. No real money, KYC, or chain broadcasts.
+
+## Tabs
+
+Home · Markets · Trade · Pay · Assets
+
+Create a local account, then Buy / Sell / Convert / Send / Receive. Completions show **Completed** plus either a random `0x…` hash (send/receive) or a `CB…` reference (internal).
 
 ## Run
 
@@ -9,20 +17,4 @@ npm install
 npm run dev
 ```
 
-Open http://localhost:43123. Logo → **Skins**. Favicon/title follow the skin.
-
-## Live quotes (read-only)
-
-Every ~15s the app reads public feeds only:
-
-- Coinbase Exchange 24h stats (price + %)
-- CoinGecko markets (backup + sparklines)
-- Binance 24h ticker when the region allows it
-- Jupiter price for SOL
-- Solana `getSlot` / ETH `eth_blockNumber` as a network-live hint
-
-Nothing is signed or sent on-chain. You only edit how many coins the LARP bag shows.
-
-## Sideloadly
-
-On a Mac: `npm run cap:sync` then `npx cap open ios`, sign, archive an IPA, install with Sideloadly.
+http://localhost:43123

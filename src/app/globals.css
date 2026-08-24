@@ -31,3 +31,14 @@ select {
 html.native-shell .sim-status {
   display: none;
 }
+
+.field {
+  margin-top: 0.25rem;
+  width: 100%;
+  border-radius: 1rem;
+  background: #1e2026;
+  padding: 0.75rem 1rem;
+  color: #fff;
+  outline: none;
+  color-scheme: dark;
+}

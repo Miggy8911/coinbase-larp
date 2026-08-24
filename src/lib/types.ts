@@ -9,50 +9,45 @@ export type Token = {
   change24h: number;
   sparkline: number[];
   color: string;
-  verified?: boolean;
 };
 
-export type Collectible = {
-  id: string;
-  name: string;
-  collection: string;
-  color: string;
-};
+export type TxKind = "send" | "receive" | "buy" | "sell" | "convert";
 
 export type ActivityItem = {
   id: string;
-  kind: "send" | "receive" | "swap";
+  kind: TxKind;
   title: string;
   subtitle: string;
   amountLabel: string;
   usdLabel: string;
   at: string;
+  txId: string;
+  status: "Completed";
 };
 
-export type LayoutId = "phantom" | "exodus" | "ledger" | "coinbase";
+export type Account = {
+  firstName: string;
+  lastName: string;
+  username: string;
+  email: string;
+};
 
-export type WalletState = {
-  walletName: string;
-  address: string;
+export type AppState = {
+  account: Account | null;
   cashUsd: number;
-  layout: LayoutId;
   tokens: Token[];
-  collectibles: Collectible[];
   activity: ActivityItem[];
 };
 
-export type Screen =
-  | "home"
-  | "swap"
-  | "nfts"
-  | "activity"
+export type Tab = "home" | "markets" | "trade" | "pay" | "assets";
+
+export type Overlay =
+  | "none"
   | "send"
   | "receive"
-  | "editor"
-  | "settings"
-  | "trade"
-  | "explore"
-  | "earn"
-  | "card"
-  | "manager"
-  | "discover";
+  | "buy"
+  | "sell"
+  | "convert"
+  | "profile"
+  | "balances"
+  | "receipt";

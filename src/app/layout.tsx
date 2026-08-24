@@ -8,13 +8,12 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Phantom-style LARP wallet simulator",
-  description:
-    "Entertainment-only wallet UI. Custom balances, simulated swaps, no keys, no chain.",
+  title: "Coinbase LARP simulator",
+  description: "Unofficial Coinbase-style LARP app. Fake account and trades. Live prices. No real money.",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
-    title: "LarpSim",
+    title: "CB LARP",
     statusBarStyle: "black-translucent",
   },
   icons: {
@@ -24,7 +23,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#1c1c1c",
+  themeColor: "#0052FF",
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
