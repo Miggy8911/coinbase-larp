@@ -4,6 +4,8 @@ import { useState } from "react";
 import { Note } from "../Note";
 import { AssetSheet } from "./AssetSheet";
 import { useApp } from "@/lib/app-context";
+import { allocatePortfolio } from "@/lib/allocate";
+import { parseMoney } from "@/lib/parse-money";
 import { useHoldings } from "@/lib/quotes-store";
 import { formatPrice } from "@/lib/utils";
 
@@ -180,13 +182,64 @@ function Receipt() {
 }
 
 function Profile() {
-  const { state, updateAccount, resetBag, setOverlay, setShowDisclaimers } = useApp();
+  const { state, updateAccount, resetBag, setOverlay, setShowDisclaimers, setPortfolioValue } = useApp();
+  const { tokens } = useHoldings(state.tokens, state.cashUsd);
+  const [bag, setBag] = useState("1 thousand");
+  const [bagError, setBagError] = useState("");
   const a = state.account;
   if (!a) return null;
+  const parsed = parseMoney(bag);
+  const preview = parsed != null && parsed >= 0 ? allocatePortfolio(parsed, tokens, (t) => t.priceUsd) : null;
+  const previewTotal = preview
+    ? preview.cashUsd + preview.tokens.reduce((s, t) => s + t.amount * t.priceUsd, 0)
+    : 0;
+  const previewRows = preview
+    ? [...preview.tokens]
+        .map((t) => ({ symbol: t.symbol, usd: t.amount * t.priceUsd }))
+        .filter((r) => r.usd > 0)
+        .sort((a, b) => b.usd - a.usd)
+        .slice(0, 6)
+    : [];
   return (
     <div className="flex-1 overflow-y-auto overscroll-y-contain px-4 pt-2 pb-8">
       <h2 className="text-[22px] font-semibold">Account</h2>
-      <label className="mt-4 flex items-center justify-between gap-3 rounded-2xl bg-[#1e2026] px-4 py-3">
+      <label className="mt-4 block text-[12px] text-white/45">Portfolio value</label>
+      <input
+        className="field text-[22px] font-semibold"
+        value={bag}
+        placeholder="1 thousand"
+        onChange={(e) => {
+          setBag(e.target.value);
+          setBagError("");
+        }}
+      />
+      <p className="mt-2 text-[12px] text-white/45">
+        Type an amount like 1000, 1 thousand, or 2.5 million. It splits across Bitcoin, Ethereum, Solana, and the rest
+        so the bag looks real.
+      </p>
+      {preview && parsed && previewTotal > 0 ? (
+        <p className="mt-2 text-[12px] text-white/55 tabular-nums">
+          {previewRows.map((r) => `${r.symbol} ${((r.usd / Math.max(previewTotal, 1)) * 100).toFixed(0)}%`).join(" · ")}
+          {preview.cashUsd > 0 ? ` · USD ${((preview.cashUsd / Math.max(previewTotal, 1)) * 100).toFixed(0)}%` : ""}
+        </p>
+      ) : null}
+      {bagError ? <p className="mt-2 text-[12px] text-[#F0616D]">{bagError}</p> : null}
+      <button
+        type="button"
+        className="tap mt-3 h-11 w-full rounded-full bg-[#0052FF] font-semibold"
+        onClick={() => {
+          const n = parseMoney(bag);
+          if (n == null) {
+            setBagError("Enter an amount like 1000 or 1 thousand.");
+            return;
+          }
+          setPortfolioValue(n);
+          setOverlay("none");
+        }}
+      >
+        Set portfolio
+      </button>
+      <label className="mt-5 flex items-center justify-between gap-3 rounded-2xl bg-[#1e2026] px-4 py-3">
         <span className="text-[14px]">Show simulator labels</span>
         <input
           type="checkbox"

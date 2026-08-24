@@ -67,8 +67,11 @@ export function seedQuotesFromTokens(tokens: Token[]) {
   emit({ ...snap, byId, version: snap.version + 1, sparkGen: snap.sparkGen + 1 });
 }
 
+let lastSparkAt = 0;
+
 export function applyTicks(ticks: Record<string, Tick>) {
   const now = Date.now();
+  const doSpark = now - lastSparkAt >= 180;
   let changed = false;
   const byId = snap.byId;
   const liveAt = snap.liveAt;
@@ -82,15 +85,22 @@ export function applyTicks(ticks: Record<string, Tick>) {
     }
     if (nextBy === byId) nextBy = { ...byId };
     if (nextLive === liveAt) nextLive = { ...liveAt };
+    const spark = !doSpark
+      ? prev.sparkline
+      : prev.sparkline.length
+        ? [...prev.sparkline.slice(-159), tick.usd]
+        : [tick.usd];
     nextBy[id] = {
       ...prev,
       usd: tick.usd,
       usd_24h_change: tick.usd_24h_change ?? prev.usd_24h_change,
+      sparkline: spark,
     };
     nextLive[id] = now;
     changed = true;
   }
   if (!changed) return;
+  if (doSpark) lastSparkAt = now;
   emit({ ...snap, byId: nextBy, liveAt: nextLive, version: snap.version + 1 });
 }
 

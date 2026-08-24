@@ -1,5 +1,6 @@
 "use client";
 
+import { allocatePortfolio } from "./allocate";
 import { CATALOG } from "./defaults";
 import { startLiveFeed } from "./live";
 import { coinbaseRef, hexTx, nowLabel, uid } from "./ids";
@@ -31,6 +32,7 @@ type Ctx = {
   updateAccount: (patch: Partial<Account>) => void;
   updateTokenAmount: (id: string, amount: number) => void;
   setCash: (n: number) => void;
+  setPortfolioValue: (usd: number) => void;
   sendCrypto: (tokenId: string, amount: number, to: string) => ActivityItem;
   buyCrypto: (tokenId: string, usd: number) => ActivityItem;
   sellCrypto: (tokenId: string, amount: number) => ActivityItem;
@@ -162,6 +164,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const setCash = useCallback((n: number) => {
     setState((s) => ({ ...s, cashUsd: n }));
+  }, []);
+
+  const setPortfolioValue = useCallback((usd: number) => {
+    setState((s) => {
+      const next = allocatePortfolio(usd, s.tokens, livePrice);
+      return { ...s, cashUsd: next.cashUsd, tokens: next.tokens };
+    });
   }, []);
 
   const sendCrypto = useCallback(
@@ -346,6 +355,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       updateAccount,
       updateTokenAmount,
       setCash,
+      setPortfolioValue,
       sendCrypto,
       buyCrypto,
       sellCrypto,
@@ -365,6 +375,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       updateAccount,
       updateTokenAmount,
       setCash,
+      setPortfolioValue,
       sendCrypto,
       buyCrypto,
       sellCrypto,

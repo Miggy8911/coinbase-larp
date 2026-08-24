@@ -3,6 +3,7 @@
 import { AreaChart } from "../Sparkline";
 import { SmoothUsd } from "../SmoothUsd";
 import { TokenGlyph } from "../TokenGlyph";
+import { mixChart, useLiveTrail } from "@/lib/chart-trail";
 import { useApp } from "@/lib/app-context";
 import { useHoldings } from "@/lib/quotes-store";
 import { cn, formatCompact, formatPct, formatPrice, sliceSpark } from "@/lib/utils";
@@ -11,10 +12,12 @@ export function AssetSheet() {
   const { state, assetId, setOverlay } = useApp();
   const { tokens } = useHoldings(state.tokens, state.cashUsd);
   const t = tokens.find((x) => x.id === assetId);
+  const pxTrail = useLiveTrail(t?.priceUsd ?? 0, assetId ?? "none", t?.change24h ?? 0);
   if (!t) return null;
   const neg = t.change24h < 0;
   const color = neg ? "#F0616D" : "#3DDC97";
   const held = t.amount * t.priceUsd;
+  const chart = mixChart(sliceSpark(t.sparkline, 1), pxTrail, t.sparkline.length > 8 ? 0.38 : 1);
   const stats: [string, string][] = [
     ["Market cap", t.marketCap ? formatCompact(t.marketCap) : "—"],
     ["Volume (24h)", t.volume24h ? formatCompact(t.volume24h) : "—"],
@@ -41,7 +44,7 @@ export function AssetSheet() {
         {formatPct(t.change24h)} · 24h
       </p>
       <div className="mt-3">
-        <AreaChart points={sliceSpark(t.sparkline, 1)} color={color} height={140} />
+        <AreaChart points={chart} color={color} height={140} />
       </div>
       <div className="mt-2 flex justify-between text-[12px] text-white/40 tabular-nums">
         <span>1H {formatPct(t.change1h)}</span>

@@ -7,6 +7,7 @@ import { CoinbaseMark } from "../CoinbaseMark";
 import { AreaChart, Sparkline } from "../Sparkline";
 import { SmoothUsd } from "../SmoothUsd";
 import { TokenGlyph } from "../TokenGlyph";
+import { mixChart, useLiveTrail } from "@/lib/chart-trail";
 import { useApp } from "@/lib/app-context";
 import { useHoldings } from "@/lib/quotes-store";
 import { cn, formatPct, formatUsd, portfolioSeries, sliceSpark } from "@/lib/utils";
@@ -29,18 +30,16 @@ export function HomeTab() {
   const [period, setPeriod] = useState("1D");
   const name = state.account?.firstName ?? "there";
   const meta = PERIODS.find((p) => p.id === period) ?? PERIODS[1];
-  const amountsKey = state.tokens.map((t) => `${t.id}:${t.amount}`).join("|");
+  const amountsKey = `${state.cashUsd}|${state.tokens.map((t) => `${t.id}:${t.amount}`).join("|")}`;
+  const trail = useLiveTrail(totalUsd, amountsKey, dayChangePct);
   const seriesBase = useMemo(
     () => portfolioSeries(tokens, state.cashUsd, 64),
-    // sparklines + bag size only — live ticks just move the last point
+    // historical shape from sparklines; live trail draws the moving right edge
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [sparkGen, amountsKey, state.cashUsd]
+    [sparkGen, amountsKey]
   );
-  const series = useMemo(() => {
-    const full = seriesBase.slice();
-    if (full.length) full[full.length - 1] = totalUsd;
-    return sliceSpark(full, meta.id === "1H" ? 0.08 : meta.id === "1D" ? 0.2 : 1);
-  }, [seriesBase, totalUsd, meta.id]);
+  const liveWeight = meta.id === "1H" ? 1 : meta.id === "1D" ? 0.42 : meta.id === "1W" ? 0.14 : 0.06;
+  const series = mixChart(sliceSpark(seriesBase, meta.id === "1H" ? 0.08 : meta.id === "1D" ? 0.2 : 1), trail, liveWeight);
   const periodChange =
     meta.change === "change24h"
       ? dayChangePct

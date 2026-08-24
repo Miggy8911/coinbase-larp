@@ -11,11 +11,11 @@ npm run dev
 
 http://localhost:43123
 
-Prices stream from Coinbase’s public ticker websocket (REST fallback). Home has a portfolio chart (1H–ALL), movers, watchlist. Open an asset for market cap, volume, ATH/ATL, 24h range, and period returns.
+Prices stream from Coinbase’s public ticker websocket (REST fallback). Home has a portfolio chart (1H–ALL) that moves with live prices, movers, watchlist. In Account, set a portfolio value like `1 thousand` and it splits across BTC, ETH, SOL, and the rest.
 
 ## Sideload an .ipa (iPhone)
 
-An IPA **must be compiled on a Mac with Xcode**. This Linux preview cannot produce a installable iOS binary.
+An IPA **must be compiled on a Mac with Xcode**. This Linux environment cannot produce an installable iPhone binary — Apple does not allow iOS apps to be built on Linux.
 
 On a Mac:
 
