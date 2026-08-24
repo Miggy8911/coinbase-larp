@@ -7,6 +7,18 @@ export type Token = {
   binanceSymbol?: string;
   priceUsd: number;
   change24h: number;
+  change1h: number;
+  change7d: number;
+  change30d: number;
+  change1y: number;
+  marketCap: number;
+  volume24h: number;
+  high24h: number;
+  low24h: number;
+  ath: number;
+  atl: number;
+  rank: number;
+  circSupply: number;
   sparkline: number[];
   color: string;
 };
@@ -51,4 +63,5 @@ export type Overlay =
   | "convert"
   | "profile"
   | "balances"
-  | "receipt";
+  | "receipt"
+  | "asset";

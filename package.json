@@ -9,7 +9,8 @@
     "lint": "eslint",
     "build:ios": "CAPACITOR=1 next build",
     "cap:sync": "CAPACITOR=1 next build && npx cap sync ios",
-    "cap:open": "npx cap open ios"
+    "cap:open": "npx cap open ios",
+    "ipa": "bash scripts/build-ipa.sh"
   },
   "dependencies": {
     "@capacitor/cli": "^8.5.0",

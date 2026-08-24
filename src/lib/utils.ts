@@ -39,6 +39,34 @@ export function formatPct(value: number) {
   return `${sign}${value.toFixed(2)}%`;
 }
 
+export function formatCompact(value: number) {
+  const abs = Math.abs(value);
+  if (abs >= 1e12) return `$${(value / 1e12).toFixed(2)}T`;
+  if (abs >= 1e9) return `$${(value / 1e9).toFixed(2)}B`;
+  if (abs >= 1e6) return `$${(value / 1e6).toFixed(2)}M`;
+  return formatUsd(value);
+}
+
+export function sliceSpark(points: number[], fraction: number) {
+  if (points.length < 2) return points;
+  const n = Math.max(2, Math.floor(points.length * fraction));
+  return points.slice(-n);
+}
+
+export function portfolioSeries(tokens: { amount: number; priceUsd: number; sparkline: number[] }[], cashUsd: number, len = 48) {
+  const series = Array.from({ length: len }, () => cashUsd);
+  for (const t of tokens) {
+    const s = t.sparkline;
+    for (let i = 0; i < len; i++) {
+      const px = s.length
+        ? s[Math.min(s.length - 1, Math.floor((i / (len - 1)) * (s.length - 1)))]
+        : t.priceUsd;
+      series[i] += t.amount * px;
+    }
+  }
+  return series;
+}
+
 export function uid() {
   return Math.random().toString(36).slice(2, 10);
 }

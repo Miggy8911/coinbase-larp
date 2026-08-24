@@ -3,8 +3,40 @@ import type { Token } from "./types";
 export type Quote = {
   usd: number;
   usd_24h_change: number;
+  change1h: number;
+  change7d: number;
+  change30d: number;
+  change1y: number;
+  marketCap: number;
+  volume24h: number;
+  high24h: number;
+  low24h: number;
+  ath: number;
+  atl: number;
+  rank: number;
+  circSupply: number;
   sparkline: number[];
 };
+
+function emptyQuote(): Quote {
+  return {
+    usd: 0,
+    usd_24h_change: 0,
+    change1h: 0,
+    change7d: 0,
+    change30d: 0,
+    change1y: 0,
+    marketCap: 0,
+    volume24h: 0,
+    high24h: 0,
+    low24h: 0,
+    ath: 0,
+    atl: 0,
+    rank: 0,
+    circSupply: 0,
+    sparkline: [],
+  };
+}
 
 export type MarketSnapshot = {
   quotes: Record<string, Quote>;
@@ -28,7 +60,7 @@ async function fetchCoinbase(tokens: Token[]): Promise<Record<string, Quote>> {
         const open = Number(row.open);
         if (!Number.isFinite(last)) return;
         const change = Number.isFinite(open) && open > 0 ? ((last - open) / open) * 100 : 0;
-        out[t.coingeckoId] = { usd: last, usd_24h_change: change, sparkline: [] };
+        out[t.coingeckoId] = { ...emptyQuote(), usd: last, usd_24h_change: change };
       } catch {
         /* skip */
       }
@@ -57,9 +89,9 @@ async function fetchBinance(tokens: Token[]): Promise<Record<string, Quote>> {
     const token = bySym[row.symbol];
     if (!token) continue;
     out[token.coingeckoId] = {
+      ...emptyQuote(),
       usd: Number(row.lastPrice),
       usd_24h_change: Number(row.priceChangePercent),
-      sparkline: [],
     };
   }
   return out;
@@ -87,13 +119,25 @@ async function fetchSparklines(tokens: Token[]): Promise<Record<string, number[]
 async function fetchGecko(tokens: Token[]): Promise<Record<string, Quote>> {
   const ids = [...new Set(tokens.map((t) => t.coingeckoId).filter(Boolean))];
   const res = await fetch(
-    `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${encodeURIComponent(ids.join(","))}&sparkline=true&price_change_percentage=24h`
+    `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${encodeURIComponent(ids.join(","))}&sparkline=true&price_change_percentage=1h,24h,7d,30d,1y`
   );
   if (!res.ok) throw new Error("gecko");
   const rows = (await res.json()) as {
     id: string;
     current_price: number;
     price_change_percentage_24h: number;
+    price_change_percentage_1h_in_currency?: number;
+    price_change_percentage_7d_in_currency?: number;
+    price_change_percentage_30d_in_currency?: number;
+    price_change_percentage_1y_in_currency?: number;
+    market_cap?: number;
+    total_volume?: number;
+    high_24h?: number;
+    low_24h?: number;
+    ath?: number;
+    atl?: number;
+    market_cap_rank?: number;
+    circulating_supply?: number;
     sparkline_in_7d?: { price: number[] };
   }[];
   const out: Record<string, Quote> = {};
@@ -102,7 +146,19 @@ async function fetchGecko(tokens: Token[]): Promise<Record<string, Quote>> {
     out[row.id] = {
       usd: row.current_price,
       usd_24h_change: row.price_change_percentage_24h ?? 0,
-      sparkline: spark.slice(-24),
+      change1h: row.price_change_percentage_1h_in_currency ?? 0,
+      change7d: row.price_change_percentage_7d_in_currency ?? 0,
+      change30d: row.price_change_percentage_30d_in_currency ?? 0,
+      change1y: row.price_change_percentage_1y_in_currency ?? 0,
+      marketCap: row.market_cap ?? 0,
+      volume24h: row.total_volume ?? 0,
+      high24h: row.high_24h ?? 0,
+      low24h: row.low_24h ?? 0,
+      ath: row.ath ?? 0,
+      atl: row.atl ?? 0,
+      rank: row.market_cap_rank ?? 0,
+      circSupply: row.circulating_supply ?? 0,
+      sparkline: spark,
     };
   }
   return out;
@@ -172,6 +228,8 @@ export async function fetchMarket(tokens: Token[]): Promise<MarketSnapshot> {
     for (const [id, q] of Object.entries(gecko)) {
         const prev = quotes[id];
         quotes[id] = {
+          ...(prev ?? emptyQuote()),
+          ...q,
           usd: prev?.usd || q.usd,
           usd_24h_change: prev?.usd_24h_change ?? q.usd_24h_change ?? 0,
           sparkline: q.sparkline.length ? q.sparkline : prev?.sparkline ?? [],
@@ -186,6 +244,7 @@ export async function fetchMarket(tokens: Token[]): Promise<MarketSnapshot> {
   if (sol) {
     const prev = quotes.solana;
     quotes.solana = {
+      ...(prev ?? emptyQuote()),
       usd: sol,
       usd_24h_change: prev?.usd_24h_change ?? 0,
       sparkline: prev?.sparkline ?? [],
@@ -207,10 +266,10 @@ export async function fetchMarket(tokens: Token[]): Promise<MarketSnapshot> {
 
   // USDT ~ $1 if missing
   if (!quotes.tether) {
-    quotes.tether = { usd: 1, usd_24h_change: 0, sparkline: [] };
+    quotes.tether = { ...emptyQuote(), usd: 1 };
   }
   if (!quotes["usd-coin"]) {
-    quotes["usd-coin"] = { usd: 1, usd_24h_change: 0, sparkline: [] };
+    quotes["usd-coin"] = { ...emptyQuote(), usd: 1 };
   }
 
   const chainHint = await fetchChainHint();

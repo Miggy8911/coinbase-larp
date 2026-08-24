@@ -19,6 +19,9 @@
 /.next/
 /out/
 
+/dist/
+
+
 # capacitor / xcode
 ios/App/Pods
 ios/App/Podfile.lock

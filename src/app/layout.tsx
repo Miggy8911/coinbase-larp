@@ -13,7 +13,7 @@ export const metadata: Metadata = {
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
-    title: "CB LARP",
+    title: "Coinbase",
     statusBarStyle: "black-translucent",
   },
   icons: {

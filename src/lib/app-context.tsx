@@ -23,6 +23,8 @@ type Ctx = {
   setTab: (t: Tab) => void;
   overlay: Overlay;
   setOverlay: (o: Overlay) => void;
+  assetId: string | null;
+  openAsset: (id: string) => void;
   receipt: Receipt;
   totalUsd: number;
   tokenUsd: number;
@@ -81,6 +83,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [hydrated, setHydrated] = useState(false);
   const [tab, setTab] = useState<Tab>("home");
   const [overlay, setOverlay] = useState<Overlay>("none");
+  const [assetId, setAssetId] = useState<string | null>(null);
   const [receipt, setReceipt] = useState<Receipt>(null);
   const [pricesLive, setPricesLive] = useState(false);
   const [marketSource, setMarketSource] = useState("connecting");
@@ -93,7 +96,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         setState({
           ...EMPTY,
           ...parsed,
-          tokens: parsed.tokens?.length ? parsed.tokens : CATALOG,
+          tokens: (parsed.tokens?.length ? parsed.tokens : CATALOG).map((tok) => {
+            const base = CATALOG.find((c) => c.id === tok.id) ?? CATALOG[0];
+            return { ...base, ...tok, sparkline: tok.sparkline ?? [] };
+          }),
           showDisclaimers: parsed.showDisclaimers === true,
         });
       }
@@ -126,6 +132,18 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
               ...t,
               priceUsd: p.usd || t.priceUsd,
               change24h: p.usd_24h_change,
+              change1h: p.change1h ?? t.change1h,
+              change7d: p.change7d ?? t.change7d,
+              change30d: p.change30d ?? t.change30d,
+              change1y: p.change1y ?? t.change1y,
+              marketCap: p.marketCap || t.marketCap,
+              volume24h: p.volume24h || t.volume24h,
+              high24h: p.high24h || t.high24h,
+              low24h: p.low24h || t.low24h,
+              ath: p.ath || t.ath,
+              atl: p.atl || t.atl,
+              rank: p.rank || t.rank,
+              circSupply: p.circSupply || t.circSupply,
               sparkline: p.sparkline.length ? p.sparkline : t.sparkline,
             };
           }),
@@ -142,6 +160,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hydrated]);
+
+  const openAsset = useCallback((id: string) => {
+    setAssetId(id);
+    setOverlay("asset");
+  }, []);
 
   const finish = useCallback((item: ActivityItem) => {
     setReceipt(item);
@@ -337,6 +360,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       setTab,
       overlay,
       setOverlay,
+      assetId,
+      openAsset,
       receipt,
       totalUsd,
       tokenUsd,
@@ -360,6 +385,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       state,
       tab,
       overlay,
+      assetId,
+      openAsset,
       receipt,
       totalUsd,
       tokenUsd,

@@ -64,21 +64,21 @@ export function CoinbaseApp() {
             {tab === "assets" && <AssetsTab />}
             <Overlays />
           </div>
-          <nav className="grid grid-cols-5 border-t border-white/10 bg-[#0A0B0D] px-1 py-2 pb-[max(0.4rem,env(safe-area-inset-bottom))]">
+          <nav className="grid grid-cols-5 border-t border-white/8 bg-[#0A0B0D] px-1 pt-1 pb-[max(0.35rem,env(safe-area-inset-bottom))]">
             <Nav active={tab === "home"} label="Home" onClick={() => setTab("home")}>
-              <Home size={20} />
+              <Home size={22} />
             </Nav>
             <Nav active={tab === "markets"} label="Markets" onClick={() => setTab("markets")}>
-              <LayoutGrid size={20} />
+              <LayoutGrid size={22} />
             </Nav>
             <Nav active={tab === "trade"} label="Trade" onClick={() => setTab("trade")} accent>
               <ArrowLeftRight size={20} />
             </Nav>
             <Nav active={tab === "pay"} label="Pay" onClick={() => setTab("pay")}>
-              <Send size={20} />
+              <Send size={22} />
             </Nav>
             <Nav active={tab === "assets"} label="Assets" onClick={() => setTab("assets")}>
-              <Wallet size={20} />
+              <Wallet size={22} />
             </Nav>
           </nav>
         </>
@@ -111,9 +111,9 @@ function Nav({
     >
       <span
         className={cn(
-          "flex h-8 w-8 items-center justify-center rounded-full",
-          accent && "bg-[#0052FF] text-white",
-          accent && !active && "opacity-80"
+          "flex items-center justify-center",
+          accent ? "h-12 w-12 -mt-4 rounded-full bg-[#0052FF] text-white shadow-lg shadow-blue-900/40" : "h-7 w-7",
+          accent && !active && "opacity-90"
         )}
       >
         {children}

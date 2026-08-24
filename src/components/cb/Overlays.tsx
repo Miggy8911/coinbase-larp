@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Note } from "../Note";
+import { AssetSheet } from "./AssetSheet";
 import { useApp } from "@/lib/app-context";
 import { formatPrice } from "@/lib/utils";
 
@@ -25,6 +26,7 @@ export function Overlays() {
       {overlay === "profile" && <Profile />}
       {overlay === "balances" && <Balances />}
       {overlay === "receipt" && receipt && <Receipt />}
+      {overlay === "asset" && <AssetSheet />}
     </div>
   );
 }

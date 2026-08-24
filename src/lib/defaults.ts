@@ -1,9 +1,28 @@
 import type { Token } from "./types";
 
 function t(
-  partial: Omit<Token, "priceUsd" | "change24h" | "sparkline"> & { amount: number }
+  partial: Omit<Token, "priceUsd" | "change24h" | "change1h" | "change7d" | "change30d" | "change1y" | "marketCap" | "volume24h" | "high24h" | "low24h" | "ath" | "atl" | "rank" | "circSupply" | "sparkline"> & {
+    amount: number;
+  }
 ): Token {
-  return { ...partial, priceUsd: 0, change24h: 0, sparkline: [] };
+  return {
+    ...partial,
+    priceUsd: 0,
+    change24h: 0,
+    change1h: 0,
+    change7d: 0,
+    change30d: 0,
+    change1y: 0,
+    marketCap: 0,
+    volume24h: 0,
+    high24h: 0,
+    low24h: 0,
+    ath: 0,
+    atl: 0,
+    rank: 0,
+    circSupply: 0,
+    sparkline: [],
+  };
 }
 
 export const CATALOG: Token[] = [
