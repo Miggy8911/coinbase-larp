@@ -11,7 +11,7 @@ npm run dev
 
 http://localhost:43123
 
-Prices stream from Coinbase’s public ticker websocket (REST fallback). Home has a portfolio chart (1H–ALL) that moves with live prices, movers, watchlist. Turn on **Edit mode** in Account to set a portfolio value like `1 thousand` (it splits across BTC, ETH, SOL, and the rest) or edit balances. Leave it off and those tools stay hidden.
+Prices stream from Coinbase’s public ticker websocket (REST fallback). Home has a portfolio chart (1H–ALL) that moves with live prices, movers, watchlist. Your name, username, and balances save on the device as soon as you change them, so a refresh or app relaunch keeps the same account. Turn on **Edit mode** in Account to set a portfolio value like `1 thousand` (it splits across BTC, ETH, SOL, and the rest) or edit balances. Leave it off and those tools stay hidden.
 
 ## Sideload an .ipa (iPhone)
 

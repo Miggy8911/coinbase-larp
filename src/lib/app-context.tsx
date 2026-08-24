@@ -4,25 +4,30 @@ import { allocatePortfolio } from "./allocate";
 import { CATALOG } from "./defaults";
 import { startLiveFeed } from "./live";
 import { coinbaseRef, hexTx, nowLabel, uid } from "./ids";
-import { getQuotes, livePrice, seedQuotesFromTokens } from "./quotes-store";
+import { readLocal, readNative, writeLocal } from "./persist";
+import { livePrice, seedQuotesFromTokens } from "./quotes-store";
 import type { Account, ActivityItem, AppState, Overlay, Tab, TxKind } from "./types";
 import {
   createContext,
   useCallback,
   useContext,
   useEffect,
+  useLayoutEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 
-const STORAGE_KEY = "coinbase-larp-v1";
+const useBrowserLayoutEffect = typeof window !== "undefined" ? useLayoutEffect : useEffect;
 
 type Receipt = ActivityItem | null;
 
 type Ctx = {
+  ready: boolean;
   state: AppState;
   tab: Tab;
   setTab: (t: Tab) => void;
+  acceptDisclaimer: () => void;
   overlay: Overlay;
   setOverlay: (o: Overlay) => void;
   assetId: string | null;
@@ -52,6 +57,7 @@ const EMPTY: AppState = {
   activity: [],
   showDisclaimers: false,
   editMode: false,
+  disclaimerSeen: false,
 };
 
 function pushTx(
@@ -79,63 +85,76 @@ function pushTx(
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<AppState>(EMPTY);
-  const [hydrated, setHydrated] = useState(false);
-  const [tab, setTab] = useState<Tab>("home");
+  const [ready, setReady] = useState(false);
+  const [tab, setTabState] = useState<Tab>("home");
   const [overlay, setOverlay] = useState<Overlay>("none");
   const [assetId, setAssetId] = useState<string | null>(null);
   const [receipt, setReceipt] = useState<Receipt>(null);
+  const latest = useRef({ state: EMPTY, tab: "home" as Tab });
+  latest.current = { state, tab };
 
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        const parsed = JSON.parse(raw) as Partial<AppState>;
-        const tokens = (parsed.tokens?.length ? parsed.tokens : CATALOG).map((tok) => {
-          const base = CATALOG.find((c) => c.id === tok.id) ?? CATALOG[0];
-          return { ...base, ...tok, sparkline: tok.sparkline ?? [] };
-        });
-        setState({
-          ...EMPTY,
-          ...parsed,
-          tokens,
-          showDisclaimers: parsed.showDisclaimers === true,
-          editMode: parsed.editMode === true,
-        });
-        seedQuotesFromTokens(tokens);
-      } else {
-        seedQuotesFromTokens(CATALOG);
-      }
-    } catch {
+  const persist = useCallback((next: AppState, nextTab: Tab) => {
+    writeLocal(next, nextTab);
+  }, []);
+
+  const setTab = useCallback((t: Tab) => {
+    setTabState(t);
+    persist(latest.current.state, t);
+  }, [persist]);
+
+  useBrowserLayoutEffect(() => {
+    const loaded = readLocal();
+    if (loaded) {
+      setState(loaded.state);
+      setTabState(loaded.tab);
+      seedQuotesFromTokens(loaded.state.tokens);
+    } else {
       seedQuotesFromTokens(CATALOG);
     }
-    setHydrated(true);
+    setReady(true);
   }, []);
 
   useEffect(() => {
-    if (!hydrated) return;
-    const id = window.setTimeout(() => {
-      const quotes = getQuotes().byId;
-      const slim: AppState = {
-        ...state,
-        tokens: state.tokens.map((t) => {
-          const q = quotes[t.coingeckoId];
-          return {
-            ...t,
-            priceUsd: q?.usd || t.priceUsd,
-            change24h: q?.usd_24h_change || t.change24h,
-            sparkline: [],
-          };
-        }),
-      };
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(slim));
-    }, 1200);
-    return () => window.clearTimeout(id);
-  }, [state, hydrated]);
+    let cancelled = false;
+    void readNative().then((native) => {
+      if (cancelled || !native?.state.account) return;
+      const local = readLocal();
+      if (local?.state.account) return;
+      setState(native.state);
+      setTabState(native.tab);
+      seedQuotesFromTokens(native.state.tokens);
+      writeLocal(native.state, native.tab);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useBrowserLayoutEffect(() => {
+    if (!ready) return;
+    persist(state, tab);
+  }, [ready, state, tab, persist]);
 
   useEffect(() => {
-    if (!hydrated) return;
+    if (!ready) return;
+    const flush = () => writeLocal(latest.current.state, latest.current.tab);
+    const onHide = () => {
+      if (document.visibilityState === "hidden") flush();
+    };
+    window.addEventListener("pagehide", flush);
+    window.addEventListener("beforeunload", flush);
+    document.addEventListener("visibilitychange", onHide);
+    return () => {
+      window.removeEventListener("pagehide", flush);
+      window.removeEventListener("beforeunload", flush);
+      document.removeEventListener("visibilitychange", onHide);
+    };
+  }, [ready]);
+
+  useEffect(() => {
+    if (!ready) return;
     return startLiveFeed(CATALOG);
-  }, [hydrated]);
+  }, [ready]);
 
   const openAsset = useCallback((id: string) => {
     setAssetId(id);
@@ -147,34 +166,60 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setOverlay("receipt");
   }, []);
 
+  const acceptDisclaimer = useCallback(() => {
+    setState((s) => {
+      const next = { ...s, disclaimerSeen: true };
+      persist(next, latest.current.tab);
+      return next;
+    });
+  }, [persist]);
+
   const createAccount = useCallback((account: Account) => {
-    setState((s) => ({ ...s, account }));
-  }, []);
+    setState((s) => {
+      const next = { ...s, account };
+      persist(next, latest.current.tab);
+      return next;
+    });
+  }, [persist]);
 
   const updateAccount = useCallback((patch: Partial<Account>) => {
-    setState((s) => ({
-      ...s,
-      account: s.account ? { ...s.account, ...patch } : (patch as Account),
-    }));
-  }, []);
+    setState((s) => {
+      const next = {
+        ...s,
+        account: s.account ? { ...s.account, ...patch } : (patch as Account),
+      };
+      persist(next, latest.current.tab);
+      return next;
+    });
+  }, [persist]);
 
   const updateTokenAmount = useCallback((id: string, amount: number) => {
-    setState((s) => ({
-      ...s,
-      tokens: s.tokens.map((t) => (t.id === id ? { ...t, amount } : t)),
-    }));
-  }, []);
+    setState((s) => {
+      const next = {
+        ...s,
+        tokens: s.tokens.map((t) => (t.id === id ? { ...t, amount } : t)),
+      };
+      persist(next, latest.current.tab);
+      return next;
+    });
+  }, [persist]);
 
   const setCash = useCallback((n: number) => {
-    setState((s) => ({ ...s, cashUsd: n }));
-  }, []);
+    setState((s) => {
+      const next = { ...s, cashUsd: n };
+      persist(next, latest.current.tab);
+      return next;
+    });
+  }, [persist]);
 
   const setPortfolioValue = useCallback((usd: number) => {
     setState((s) => {
-      const next = allocatePortfolio(usd, s.tokens, livePrice);
-      return { ...s, cashUsd: next.cashUsd, tokens: next.tokens };
+      const allocated = allocatePortfolio(usd, s.tokens, livePrice);
+      const next = { ...s, cashUsd: allocated.cashUsd, tokens: allocated.tokens };
+      persist(next, latest.current.tab);
+      return next;
     });
-  }, []);
+  }, [persist]);
 
   const sendCrypto = useCallback(
     (tokenId: string, amount: number, to: string) => {
@@ -198,12 +243,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           true
         );
         created = item;
+        persist(next, latest.current.tab);
         return next;
       });
       if (created) finish(created);
       return created;
     },
-    [finish]
+    [finish, persist]
   );
 
   const buyCrypto = useCallback(
@@ -228,12 +274,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           false
         );
         created = item;
+        persist(next, latest.current.tab);
         return next;
       });
       if (created) finish(created);
       return created;
     },
-    [finish]
+    [finish, persist]
   );
 
   const sellCrypto = useCallback(
@@ -259,12 +306,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           false
         );
         created = item;
+        persist(next, latest.current.tab);
         return next;
       });
       if (created) finish(created);
       return created;
     },
-    [finish]
+    [finish, persist]
   );
 
   const convert = useCallback(
@@ -296,12 +344,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           false
         );
         created = item;
+        persist(next, latest.current.tab);
         return next;
       });
       if (created) finish(created);
       return created;
     },
-    [finish]
+    [finish, persist]
   );
 
   const receiveCrypto = useCallback(
@@ -324,22 +373,28 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           true
         );
         created = item;
+        persist(next, latest.current.tab);
         return next;
       });
       if (created) finish(created);
       return created;
     },
-    [finish]
+    [finish, persist]
   );
 
   const resetBag = useCallback(() => {
-    setState((s) => ({
-      ...EMPTY,
-      account: s.account,
-      showDisclaimers: s.showDisclaimers,
-      editMode: s.editMode,
-    }));
-  }, []);
+    setState((s) => {
+      const next = {
+        ...EMPTY,
+        account: s.account,
+        showDisclaimers: s.showDisclaimers,
+        editMode: s.editMode,
+        disclaimerSeen: s.disclaimerSeen,
+      };
+      persist(next, latest.current.tab);
+      return next;
+    });
+  }, [persist]);
 
   const setShowDisclaimers = useCallback((v: boolean) => {
     setState((s) => ({ ...s, showDisclaimers: v }));
@@ -352,9 +407,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const value = useMemo(
     () => ({
+      ready,
       state,
       tab,
       setTab,
+      acceptDisclaimer,
       overlay,
       setOverlay,
       assetId,
@@ -375,8 +432,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       setEditMode,
     }),
     [
+      ready,
       state,
       tab,
+      setTab,
+      acceptDisclaimer,
       overlay,
       assetId,
       openAsset,

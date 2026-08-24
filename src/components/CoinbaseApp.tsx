@@ -9,25 +9,15 @@ import { AssetsTab, MarketsTab } from "./cb/MarketsAssets";
 import { PayTab, TradeTab } from "./cb/TradePay";
 import { Overlays } from "./cb/Overlays";
 import { cn } from "@/lib/utils";
-import { DISCLAIMER_KEY } from "@/lib/ids";
-import { useEffect, useState } from "react";
 
 export function CoinbaseApp() {
-  const { state, tab, setTab } = useApp();
-  const [seen, setSeen] = useState<boolean | null>(null);
-
-  useEffect(() => {
-    const accepted =
-      localStorage.getItem(DISCLAIMER_KEY) === "1" || sessionStorage.getItem("cb-larp-ok") === "1";
-    if (accepted) localStorage.setItem(DISCLAIMER_KEY, "1");
-    setSeen(accepted);
-  }, []);
+  const { ready, state, tab, setTab, acceptDisclaimer } = useApp();
 
   return (
     <div className="relative mx-auto flex h-[100dvh] w-full max-w-[430px] flex-col overflow-hidden overscroll-none bg-[#0A0B0D] pt-[env(safe-area-inset-top)] text-white [touch-action:pan-y]">
-      {seen === null ? (
+      {!ready ? (
         <div className="flex-1" />
-      ) : !seen ? (
+      ) : !state.disclaimerSeen ? (
         <div className="flex flex-1 flex-col justify-center px-6">
           <h1 className="text-[26px] font-semibold">Not a real Coinbase account</h1>
           <p className="mt-3 text-[14px] leading-6 text-white/60">
@@ -38,10 +28,7 @@ export function CoinbaseApp() {
           <button
             type="button"
             className="tap mt-8 h-12 rounded-full bg-[#0052FF] font-semibold"
-            onClick={() => {
-              localStorage.setItem(DISCLAIMER_KEY, "1");
-              setSeen(true);
-            }}
+            onClick={acceptDisclaimer}
           >
             I understand
           </button>
