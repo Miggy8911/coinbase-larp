@@ -15,10 +15,11 @@ Open http://localhost:43123. Logo → **Skins**. Favicon/title follow the skin.
 
 Every ~15s the app reads public feeds only:
 
-- Binance 24h ticker (price + %)
+- Coinbase Exchange 24h stats (price + %)
 - CoinGecko markets (backup + sparklines)
+- Binance 24h ticker when the region allows it
 - Jupiter price for SOL
-- Solana `getSlot` / ETH `eth_blockNumber` as a “network is live” hint
+- Solana `getSlot` / ETH `eth_blockNumber` as a network-live hint
 
 Nothing is signed or sent on-chain. You only edit how many coins the LARP bag shows.
 

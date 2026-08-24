@@ -14,6 +14,29 @@ export type MarketSnapshot = {
 
 const SOL_MINT = "So11111111111111111111111111111111111111112";
 
+async function fetchCoinbase(tokens: Token[]): Promise<Record<string, Quote>> {
+  const out: Record<string, Quote> = {};
+  await Promise.all(
+    tokens.map(async (t) => {
+      if (!t.coingeckoId || t.coingeckoId === "tether") return;
+      const product = `${t.symbol}-USD`;
+      try {
+        const res = await fetch(`https://api.exchange.coinbase.com/products/${product}/stats`);
+        if (!res.ok) return;
+        const row = (await res.json()) as { last?: string; open?: string };
+        const last = Number(row.last);
+        const open = Number(row.open);
+        if (!Number.isFinite(last)) return;
+        const change = Number.isFinite(open) && open > 0 ? ((last - open) / open) * 100 : 0;
+        out[t.coingeckoId] = { usd: last, usd_24h_change: change, sparkline: [] };
+      } catch {
+        /* skip */
+      }
+    })
+  );
+  return out;
+}
+
 async function fetchBinance(tokens: Token[]): Promise<Record<string, Quote>> {
   const symbols = tokens
     .map((t) => t.binanceSymbol)
@@ -24,11 +47,10 @@ async function fetchBinance(tokens: Token[]): Promise<Record<string, Quote>> {
   )}`;
   const res = await fetch(url);
   if (!res.ok) throw new Error("binance");
-  const rows = (await res.json()) as {
-    symbol: string;
-    lastPrice: string;
-    priceChangePercent: string;
-  }[];
+  const rows = (await res.json()) as
+    | { symbol: string; lastPrice: string; priceChangePercent: string }[]
+    | { code?: number };
+  if (!Array.isArray(rows)) throw new Error("binance");
   const bySym = Object.fromEntries(tokens.filter((t) => t.binanceSymbol).map((t) => [t.binanceSymbol, t]));
   const out: Record<string, Quote> = {};
   for (const row of rows) {
@@ -132,8 +154,15 @@ export async function fetchMarket(tokens: Token[]): Promise<MarketSnapshot> {
   const sources: string[] = [];
 
   try {
+    Object.assign(quotes, await fetchCoinbase(tokens));
+    if (Object.keys(quotes).length) sources.push("Coinbase");
+  } catch {
+    /* next */
+  }
+
+  try {
     Object.assign(quotes, await fetchBinance(tokens));
-    if (Object.keys(quotes).length) sources.push("Binance");
+    if (Object.keys(quotes).length && !sources.includes("Binance")) sources.push("Binance");
   } catch {
     /* next */
   }
