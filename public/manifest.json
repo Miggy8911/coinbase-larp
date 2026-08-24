@@ -1,0 +1,9 @@
+{
+  "name": "Wallet Sim",
+  "short_name": "Wallet Sim",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1c1c1c",
+  "theme_color": "#1c1c1c",
+  "description": "Entertainment-only Phantom-style wallet simulator. No real funds."
+}
