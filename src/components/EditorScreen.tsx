@@ -7,8 +7,18 @@ export function EditorScreen() {
     useWallet();
 
   return (
-    <div className="flex h-full flex-col overflow-y-auto px-4 pt-4 pb-6">
-      <h2 className="text-center text-[17px] font-semibold">Wallet editor</h2>
+    <div className="flex h-full flex-col bg-black">
+      <div className="flex items-center justify-between px-4 pt-4">
+        <h2 className="text-[17px] font-semibold">Wallet editor</h2>
+        <button
+          type="button"
+          onClick={() => setScreen("home")}
+          className="rounded-full bg-[#AB9FF2] px-4 py-1.5 text-[13px] font-semibold text-[#1b1529]"
+        >
+          Done
+        </button>
+      </div>
+      <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-6">
       <p className="mt-1 text-center text-[12px] text-[#8d8d8d]">
         Type LARP amounts. USD price and 24h % refresh from live feeds when the CoinGecko id is set.
       </p>
@@ -97,6 +107,7 @@ export function EditorScreen() {
         >
           Done
         </button>
+      </div>
       </div>
     </div>
   );

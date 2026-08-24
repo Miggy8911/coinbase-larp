@@ -19,8 +19,8 @@ export function PhantomHome() {
         </button>
         <div className="flex rounded-full bg-[#1a1a1a] p-1 text-[13px] font-semibold">
           <Tab active>Home</Tab>
-          <Tab onClick={() => setScreen("trade")}>Trade</Tab>
-          <Tab onClick={() => setScreen("explore")}>Explore</Tab>
+          <Tab onClick={() => setScreen("swap")}>Trade</Tab>
+          <Tab onClick={() => setScreen("nfts")}>NFTs</Tab>
         </div>
       </div>
 
@@ -107,10 +107,10 @@ export function PhantomHome() {
       <div className="absolute bottom-[max(0.75rem,env(safe-area-inset-bottom))] left-3 right-3 flex items-center gap-2">
         <button
           type="button"
-          onClick={() => setScreen("explore")}
+          onClick={() => setScreen("activity")}
           className="flex h-12 flex-1 items-center gap-2 rounded-full bg-[#2c2c2e] px-4 text-[15px] text-[#8e8e93]"
         >
-          <Search size={18} /> Search
+          <Search size={18} /> Activity
         </button>
         <button
           type="button"
