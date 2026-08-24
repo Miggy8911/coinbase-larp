@@ -1,37 +1,27 @@
-# Phantom-style LARP wallet simulator
+# LARP wallet simulator
 
-Entertainment-only wallet UI. Custom balances, three home layouts, simulated send/swap. **No keys, no chain, no real funds.** Not affiliated with Phantom.
+Unofficial Phantom / Exodus / Ledger / Coinbase skins for screenshots. **Amounts are fake. USD prices and 24h percents are live, read-only market data.** No keys, no broadcasts. Not affiliated with those companies.
 
-## Run in a browser
+## Run
 
 ```bash
 npm install
 npm run dev
 ```
 
-Open http://localhost:43123. Tap the ghost / account / gear to open **Settings** and pick a layout:
+Open http://localhost:43123. Logo → **Skins**. Favicon/title follow the skin.
 
-- **Larpz list** — black token cards, Home / Trade / Explore, Cash row
-- **Halo ring** — gradient glass cards and an allocation ring
-- **Pulse markets** — Transfer / Swap / Buy plus market chips
+## Live quotes (read-only)
 
-## Sideload on iPhone (Sideloadly)
+Every ~15s the app reads public feeds only:
 
-Sideloadly installs an **.ipa**. Building that file needs a Mac with Xcode and a free Apple ID. This Linux/web preview cannot sign an IPA for you.
+- Binance 24h ticker (price + %)
+- CoinGecko markets (backup + sparklines)
+- Jupiter price for SOL
+- Solana `getSlot` / ETH `eth_blockNumber` as a “network is live” hint
 
-1. On a Mac: `npm install` then `npm run cap:sync`
-2. `npx cap open ios` (opens the Xcode project in `ios/`)
-3. In Xcode, select the **App** target → **Signing & Capabilities** → check **Automatically manage signing** → Team = your Apple ID
-4. Set the bundle id if needed (default `com.larpsim.wallet`)
-5. **Product → Archive**, then **Distribute App → Custom → Debugging** (or Ad Hoc) to export an `.ipa`
-6. Open [Sideloadly](https://sideloadly.io/) on Windows or Mac, pick that IPA, your Apple ID, and your device
+Nothing is signed or sent on-chain. You only edit how many coins the LARP bag shows.
 
-Apple’s 7-day free-dev certificate applies. Re-sideload when it expires.
+## Sideloadly
 
-### Without Sideloadly
-
-On iPhone Safari, open the deployed or local site → Share → **Add to Home Screen**. That is a PWA, not a native IPA.
-
-## What it does not do
-
-No seed phrases, wallet connect, or real transfers. Do not use it to misrepresent holdings or solicit funds.
+On a Mac: `npm run cap:sync` then `npx cap open ios`, sign, archive an IPA, install with Sideloadly.

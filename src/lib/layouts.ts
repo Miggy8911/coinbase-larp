@@ -1,19 +1,30 @@
-export type LayoutId = "larpz" | "halo" | "pulse";
+import type { LayoutId } from "./types";
 
 export const LAYOUTS: { id: LayoutId; name: string; blurb: string }[] = [
   {
-    id: "larpz",
-    name: "Larpz list",
-    blurb: "Black cards, Home / Trade / Explore, Cash row, search + plus button.",
+    id: "phantom",
+    name: "Phantom",
+    blurb: "Ghost icon, purple Home / Trade / Explore, Cash + token cards.",
   },
   {
-    id: "halo",
-    name: "Halo ring",
-    blurb: "Purple glass cards and a circular allocation ring around the total.",
+    id: "exodus",
+    name: "Exodus",
+    blurb: "Portfolio chart, Send / Exchange, multi-asset list.",
   },
   {
-    id: "pulse",
-    name: "Pulse markets",
-    blurb: "Gradient header, Transfer / Swap / Buy, market chips, Assets toggle.",
+    id: "ledger",
+    name: "Ledger Live",
+    blurb: "Accounts list, Manager / Discover, hardware-wallet chrome.",
+  },
+  {
+    id: "coinbase",
+    name: "Coinbase",
+    blurb: "Blue Buy button, watchlist rows, Home / Trade / Pay tabs.",
   },
 ];
+
+export const LEGACY_LAYOUT: Record<string, LayoutId> = {
+  larpz: "phantom",
+  halo: "exodus",
+  pulse: "ledger",
+};

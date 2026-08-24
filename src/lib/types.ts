@@ -4,8 +4,10 @@ export type Token = {
   name: string;
   amount: number;
   coingeckoId: string;
+  binanceSymbol?: string;
   priceUsd: number;
   change24h: number;
+  sparkline: number[];
   color: string;
   verified?: boolean;
 };
@@ -27,7 +29,7 @@ export type ActivityItem = {
   at: string;
 };
 
-export type LayoutId = "larpz" | "halo" | "pulse";
+export type LayoutId = "phantom" | "exodus" | "ledger" | "coinbase";
 
 export type WalletState = {
   walletName: string;
@@ -51,4 +53,6 @@ export type Screen =
   | "trade"
   | "explore"
   | "earn"
-  | "card";
+  | "card"
+  | "manager"
+  | "discover";

@@ -1,29 +1,28 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { CreditCard, Home, LineChart, Repeat } from "lucide-react";
+import { Compass, CreditCard, Home, Repeat, Send, Wallet } from "lucide-react";
 import { useWallet } from "@/lib/wallet-context";
 import { SwapScreen, SendScreen, ReceiveScreen } from "./FlowScreens";
 import { ActivityScreen, NftScreen } from "./Lists";
 import { EditorScreen } from "./EditorScreen";
-import { LarpzHome } from "./LarpzHome";
-import { HaloHome } from "./HaloHome";
-import { PulseHome } from "./PulseHome";
+import { PhantomHome } from "./PhantomHome";
+import { ExodusHome } from "./ExodusHome";
+import { LedgerHome } from "./LedgerHome";
+import { CoinbaseHome } from "./CoinbaseHome";
 import { SettingsScreen, SimplePage } from "./SettingsScreen";
+import { brandTheme } from "./BrandMark";
 import { cn } from "@/lib/utils";
 
 export function WalletShell() {
   const { screen, setScreen, state } = useWallet();
-  const layout = state.layout ?? "larpz";
+  const layout = state.layout ?? "phantom";
+  const theme = brandTheme(layout);
 
   return (
     <div
-      className={cn(
-        "relative mx-auto flex h-[100dvh] w-full max-w-[430px] flex-col overflow-hidden text-white",
-        layout === "larpz" && "bg-black",
-        layout === "halo" && "bg-[#0D0D15]",
-        layout === "pulse" && "bg-[#0b0b0f]"
-      )}
+      className="relative mx-auto flex h-[100dvh] w-full max-w-[430px] flex-col overflow-hidden text-white"
+      style={{ background: theme.bg }}
     >
       <div className="sim-status flex items-center justify-between px-6 pt-[max(0.35rem,env(safe-area-inset-top))] text-[12px] text-[#cfcfcf]">
         <span>9:41</span>
@@ -32,9 +31,10 @@ export function WalletShell() {
       </div>
 
       <div className="min-h-0 flex-1">
-        {screen === "home" && layout === "larpz" && <LarpzHome />}
-        {screen === "home" && layout === "halo" && <HaloHome />}
-        {screen === "home" && layout === "pulse" && <PulseHome />}
+        {screen === "home" && layout === "phantom" && <PhantomHome />}
+        {screen === "home" && layout === "exodus" && <ExodusHome />}
+        {screen === "home" && layout === "ledger" && <LedgerHome />}
+        {screen === "home" && layout === "coinbase" && <CoinbaseHome />}
         {screen === "swap" && <SwapScreen />}
         {screen === "nfts" && <NftScreen />}
         {screen === "activity" && <ActivityScreen />}
@@ -42,61 +42,61 @@ export function WalletShell() {
         {screen === "receive" && <ReceiveScreen />}
         {screen === "editor" && <EditorScreen />}
         {screen === "settings" && <SettingsScreen />}
-        {screen === "trade" && (
-          <SimplePage title="Trade" body="Simulated trade tab. Swaps live under Swap." />
-        )}
-        {screen === "explore" && (
-          <SimplePage title="Explore" body="Decorative explore tab. Nothing is on-chain." />
-        )}
-        {screen === "earn" && (
-          <SimplePage title="Earn" body="Placeholder earn screen for the Pulse layout." />
-        )}
-        {screen === "card" && (
-          <SimplePage title="Card" body="Placeholder card screen for the Pulse layout." />
-        )}
+        {screen === "trade" && <SimplePage title="Trade" body="Simulated. Live prices are read-only from market feeds." />}
+        {screen === "explore" && <SimplePage title="Explore" body="Decorative tab. Quotes still update on Home." />}
+        {screen === "earn" && <SimplePage title="Pay" body="Placeholder Coinbase Pay tab." />}
+        {screen === "card" && <SimplePage title="Assets" body="Use Home for the live watchlist." />}
+        {screen === "manager" && <SimplePage title="Manager" body="Ledger Manager is visual only." />}
+        {screen === "discover" && <SimplePage title="Discover" body="Ledger Discover is visual only." />}
       </div>
 
-      {layout === "halo" && screen === "home" && (
-        <div className="pointer-events-none absolute bottom-[max(1rem,env(safe-area-inset-bottom))] left-0 right-0 flex justify-center">
-          <nav className="pointer-events-auto flex items-center gap-3 rounded-full border border-white/10 bg-black/50 px-3 py-2 backdrop-blur-xl">
-            <button
-              type="button"
-              className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#7C5CFF]"
-              onClick={() => setScreen("home")}
-            >
-              <Home size={18} />
-            </button>
-            <button
-              type="button"
-              className="flex h-12 w-12 items-center justify-center rounded-full bg-white/10"
-              onClick={() => setScreen("swap")}
-            >
-              <Repeat size={18} />
-            </button>
-            <button
-              type="button"
-              className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-lg"
-              onClick={() => setScreen("editor")}
-            >
-              $
-            </button>
-          </nav>
-        </div>
+      {layout === "exodus" && ["home", "send", "swap", "settings"].includes(screen) && (
+        <nav className="grid grid-cols-4 border-t border-white/10 bg-[#0E0A1F] px-2 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
+          <NavBtn active={screen === "home"} label="Portfolio" onClick={() => setScreen("home")}>
+            <Wallet size={18} />
+          </NavBtn>
+          <NavBtn active={screen === "send"} label="Send" onClick={() => setScreen("send")}>
+            <Send size={18} />
+          </NavBtn>
+          <NavBtn active={screen === "swap"} label="Exchange" onClick={() => setScreen("swap")}>
+            <Repeat size={18} />
+          </NavBtn>
+          <NavBtn active={screen === "settings"} label="Profile" onClick={() => setScreen("settings")}>
+            <Home size={18} />
+          </NavBtn>
+        </nav>
       )}
 
-      {layout === "pulse" && (screen === "home" || screen === "swap" || screen === "earn" || screen === "card") && (
-        <nav className="grid grid-cols-4 border-t border-white/5 bg-[#0b0b0f] px-2 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
+      {layout === "ledger" && ["home", "manager", "discover", "settings"].includes(screen) && (
+        <nav className="grid grid-cols-4 border-t border-white/10 bg-[#121214] px-2 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
+          <NavBtn active={screen === "home"} label="Wallet" onClick={() => setScreen("home")}>
+            <Wallet size={18} />
+          </NavBtn>
+          <NavBtn active={screen === "manager"} label="Manager" onClick={() => setScreen("manager")}>
+            <Compass size={18} />
+          </NavBtn>
+          <NavBtn active={screen === "discover"} label="Discover" onClick={() => setScreen("discover")}>
+            <Repeat size={18} />
+          </NavBtn>
+          <NavBtn active={screen === "settings"} label="Settings" onClick={() => setScreen("settings")}>
+            <Home size={18} />
+          </NavBtn>
+        </nav>
+      )}
+
+      {layout === "coinbase" && ["home", "swap", "earn", "card"].includes(screen) && (
+        <nav className="grid grid-cols-4 border-t border-white/10 bg-[#0A0B0D] px-2 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
           <NavBtn active={screen === "home"} label="Home" onClick={() => setScreen("home")}>
             <Home size={18} />
           </NavBtn>
-          <NavBtn active={screen === "swap"} label="Swap" onClick={() => setScreen("swap")}>
+          <NavBtn active={screen === "swap"} label="Trade" onClick={() => setScreen("swap")}>
             <Repeat size={18} />
           </NavBtn>
-          <NavBtn active={screen === "earn"} label="Earn" onClick={() => setScreen("earn")}>
-            <LineChart size={18} />
-          </NavBtn>
-          <NavBtn active={screen === "card"} label="Card" onClick={() => setScreen("card")}>
+          <NavBtn active={screen === "earn"} label="Pay" onClick={() => setScreen("earn")}>
             <CreditCard size={18} />
+          </NavBtn>
+          <NavBtn active={screen === "card"} label="Assets" onClick={() => setScreen("home")}>
+            <Wallet size={18} />
           </NavBtn>
         </nav>
       )}

@@ -37,11 +37,11 @@ export function AppClient() {
             </p>
             <h1 className="mt-2 text-3xl font-semibold tracking-tight">LARP wallet</h1>
             <p className="mt-3 text-sm leading-6 text-[#b7b7b7]">
-              Three layouts, custom balances, no keys. Sideload the iOS wrapper with Sideloadly
-              after you build an IPA on a Mac, or Add to Home Screen from Safari.
+              Phantom, Exodus, Ledger, and Coinbase skins. Amounts you type are fake. USD prices and
+              24h percents are live read-only market data. Icon follows the selected skin.
             </p>
             <p className="mt-4 text-xs leading-5 text-[#8d8e93]">
-              Ghost icon or Settings opens layout picker. Not affiliated with Phantom.
+              Unofficial lookalikes. Not affiliated with those companies. No keys, no on-chain sends.
             </p>
           </aside>
         )}

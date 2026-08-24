@@ -26,6 +26,19 @@ export function truncateAddress(address: string) {
   return `${address.slice(0, 4)}...${address.slice(-4)}`;
 }
 
+export function formatPrice(value: number) {
+  if (!Number.isFinite(value)) return "$0.00";
+  if (value >= 1000) return formatUsd(value, 2);
+  if (value >= 1) return `$${value.toFixed(2)}`;
+  if (value >= 0.01) return `$${value.toFixed(4)}`;
+  return `$${value.toPrecision(3)}`;
+}
+
+export function formatPct(value: number) {
+  const sign = value > 0 ? "+" : "";
+  return `${sign}${value.toFixed(2)}%`;
+}
+
 export function uid() {
   return Math.random().toString(36).slice(2, 10);
 }

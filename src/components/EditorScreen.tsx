@@ -3,14 +3,14 @@
 import { useWallet } from "@/lib/wallet-context";
 
 export function EditorScreen() {
-  const { state, updateWallet, updateToken, addToken, removeToken, reset, setScreen, pricesLive } =
+  const { state, updateWallet, updateToken, addToken, removeToken, reset, setScreen } =
     useWallet();
 
   return (
     <div className="flex h-full flex-col overflow-y-auto px-4 pt-4 pb-6">
       <h2 className="text-center text-[17px] font-semibold">Wallet editor</h2>
       <p className="mt-1 text-center text-[12px] text-[#8d8d8d]">
-        Type any balances you want. {pricesLive ? "Live CoinGecko prices on known tokens." : "Using stored prices."}
+        Type LARP amounts. USD price and 24h % refresh from live feeds when the CoinGecko id is set.
       </p>
 
       <label className="mt-5 text-[12px] text-[#8d8d8d]">Wallet name</label>
@@ -27,7 +27,7 @@ export function EditorScreen() {
         className="mt-1 rounded-2xl bg-[#2a2a2a] px-4 py-3 text-sm outline-none"
       />
 
-      <label className="mt-3 text-[12px] text-[#8d8d8d]">Cash (USD, Larpz layout)</label>
+      <label className="mt-3 text-[12px] text-[#8d8d8d]">Cash (USD, Phantom skin)</label>
       <input
         value={String(state.cashUsd ?? 0)}
         onChange={(e) => updateWallet({ cashUsd: Number(e.target.value) || 0 })}
