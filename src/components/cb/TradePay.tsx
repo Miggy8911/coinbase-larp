@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Note } from "../Note";
 import { useApp } from "@/lib/app-context";
 import { formatAmount, formatPrice } from "@/lib/utils";
 
@@ -48,7 +49,7 @@ export function TradeTab() {
               You receive ~{formatAmount(Number(usd) / token.priceUsd)} {token.symbol}
             </p>
           )}
-          <p className="mt-1 text-[12px] text-white/35">Pays from USD cash · simulated fill</p>
+          <Note className="mt-1 text-[12px] text-white/35">Pays from USD cash</Note>
           <button
             type="button"
             className="mt-auto mb-4 h-12 rounded-full bg-[#0052FF] text-[15px] font-semibold"
@@ -113,7 +114,7 @@ export function PayTab() {
   return (
     <div className="flex h-full flex-col">
       <h1 className="px-4 pt-4 text-[22px] font-semibold">Pay</h1>
-      <p className="px-4 text-[13px] text-white/45">Send or receive. Completes only in this LARP app.</p>
+      <Note className="px-4 text-[13px] text-white/45">Send or receive. Completes only on this device.</Note>
       <div className="mt-4 grid grid-cols-2 gap-2 px-4">
         <button
           type="button"
@@ -133,7 +134,7 @@ export function PayTab() {
       <p className="mt-6 px-4 text-[13px] font-semibold text-white/70">Recent</p>
       <ul className="flex-1 overflow-y-auto px-4 pb-4">
         {state.activity.length === 0 && (
-          <li className="py-8 text-center text-[13px] text-white/40">No activity yet. Send or trade to mint a fake ID.</li>
+          <li className="py-8 text-center text-[13px] text-white/40">No activity yet</li>
         )}
         {state.activity.map((a) => (
           <li key={a.id} className="border-b border-white/5 py-3">

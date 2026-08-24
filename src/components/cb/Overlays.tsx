@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Note } from "../Note";
 import { useApp } from "@/lib/app-context";
 import { formatPrice } from "@/lib/utils";
 
@@ -56,7 +57,7 @@ function SendForm() {
   return (
     <div className="flex flex-1 flex-col px-4 pt-4">
       <h2 className="text-[22px] font-semibold">Send</h2>
-      <p className="text-[13px] text-white/45">Shows as sent on this device only. Random tx hash.</p>
+      <Note>Shows as sent on this device. Random transaction ID.</Note>
       <label className="mt-4 text-[12px] text-white/45">To</label>
       <input className="field" value={to} onChange={(e) => setTo(e.target.value)} />
       <label className="mt-3 text-[12px] text-white/45">Asset</label>
@@ -87,20 +88,19 @@ function ReceiveForm() {
   const { state, receiveCrypto } = useApp();
   const [tokenId, setTokenId] = useState(state.tokens[0]?.id ?? "btc");
   const [amount, setAmount] = useState("1");
+  const addr = `0x${(state.account?.username ?? "wallet").padEnd(40, "a0").slice(0, 40).replace(/[^a-f0-9]/gi, "a")}`;
   return (
     <div className="flex flex-1 flex-col px-4 pt-4">
       <h2 className="text-[22px] font-semibold">Receive</h2>
-      <p className="text-[13px] text-white/45">Pretend an inbound transfer landed. Generates a tx id.</p>
+      <Note>Inbound transfer for this device only.</Note>
       <div className="mx-auto mt-6 h-40 w-40 rounded-2xl bg-white p-3">
         <div className="h-full w-full bg-[repeating-linear-gradient(90deg,#111_0_8px,transparent_8px_16px),repeating-linear-gradient(0deg,#111_0_8px,transparent_8px_16px)]" />
       </div>
-      <p className="mt-4 break-all text-center font-mono text-[11px] text-white/50">
-        cb1q-larp-{state.account?.username ?? "user"}-not-real
-      </p>
+      <p className="mt-4 break-all text-center font-mono text-[11px] text-white/50">{addr}</p>
       <select className="field mt-4" value={tokenId} onChange={(e) => setTokenId(e.target.value)}>
         {state.tokens.map((t) => (
           <option key={t.id} value={t.id}>
-            Simulate receive {t.symbol}
+            Receive {t.symbol}
           </option>
         ))}
       </select>
@@ -110,7 +110,7 @@ function ReceiveForm() {
         className="mt-auto mb-6 h-12 rounded-full bg-[#0052FF] font-semibold"
         onClick={() => receiveCrypto(tokenId, Number(amount) || 0)}
       >
-        Simulate incoming
+        Receive
       </button>
     </div>
   );
@@ -140,7 +140,7 @@ function BuyForm() {
         className="mt-auto mb-6 h-12 rounded-full bg-[#0052FF] font-semibold"
         onClick={() => buyCrypto(tokenId, Number(usd) || 0)}
       >
-        Preview buy
+        Buy
       </button>
     </div>
   );
@@ -162,7 +162,7 @@ function Receipt() {
         <p className="mt-3 text-[11px] text-white/40">{receipt.subtitle}</p>
         <p className="mt-1 text-[13px]">{receipt.usdLabel}</p>
       </div>
-      <p className="mt-4 text-[12px] text-white/35">Fake ID for screenshots. Nothing left this phone.</p>
+      <Note className="mt-4 text-[12px] text-white/35">ID is generated on this device.</Note>
       <button
         type="button"
         className="mt-auto mb-6 h-12 w-full rounded-full bg-[#0052FF] font-semibold"
@@ -175,13 +175,22 @@ function Receipt() {
 }
 
 function Profile() {
-  const { state, updateAccount, resetBag, setOverlay } = useApp();
+  const { state, updateAccount, resetBag, setOverlay, setShowDisclaimers } = useApp();
   const a = state.account;
   if (!a) return null;
   return (
     <div className="flex-1 overflow-y-auto px-4 pt-2 pb-8">
       <h2 className="text-[22px] font-semibold">Account</h2>
-      <p className="text-[12px] text-white/45">Stored only in this browser.</p>
+      <label className="mt-4 flex items-center justify-between gap-3 rounded-2xl bg-[#1e2026] px-4 py-3">
+        <span className="text-[14px]">Show simulator labels</span>
+        <input
+          type="checkbox"
+          checked={state.showDisclaimers}
+          onChange={(e) => setShowDisclaimers(e.target.checked)}
+          className="h-5 w-5 accent-[#0052FF]"
+        />
+      </label>
+      <Note className="mt-2">Notices like “not real funds” stay hidden unless this is on.</Note>
       <label className="mt-4 block text-[12px] text-white/45">First name</label>
       <input className="field" value={a.firstName} onChange={(e) => updateAccount({ firstName: e.target.value })} />
       <label className="mt-3 block text-[12px] text-white/45">Last name</label>
@@ -195,16 +204,16 @@ function Profile() {
         className="mt-6 h-11 w-full rounded-full bg-[#1e2026] font-semibold"
         onClick={() => setOverlay("balances")}
       >
-        Edit LARP bag
+        Edit balances
       </button>
       <button
         type="button"
         className="mt-2 h-11 w-full rounded-full bg-[#3a1518] text-[#F0616D] font-semibold"
         onClick={() => {
-          if (confirm("Reset fake balances and history?")) resetBag();
+          if (confirm("Reset balances and history?")) resetBag();
         }}
       >
-        Reset demo bag
+        Reset balances
       </button>
     </div>
   );
@@ -214,8 +223,8 @@ function Balances() {
   const { state, updateTokenAmount, setCash } = useApp();
   return (
     <div className="flex-1 overflow-y-auto px-4 pb-8">
-      <h2 className="text-[22px] font-semibold">LARP amounts</h2>
-      <p className="text-[12px] text-white/45">Prices stay live. You only type quantities.</p>
+      <h2 className="text-[22px] font-semibold">Balances</h2>
+      <Note>Prices stay live. You only type quantities.</Note>
       <label className="mt-4 block text-[12px] text-white/45">USD cash</label>
       <input
         className="field"

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { AppProvider } from "@/lib/app-context";
+import { AppProvider, useApp } from "@/lib/app-context";
 import { CoinbaseApp } from "./CoinbaseApp";
 
 export function AppClient() {
@@ -14,30 +14,37 @@ export function AppClient() {
 
   return (
     <div className="min-h-[100dvh] bg-black text-white">
-      <div
-        className={
-          native
-            ? "mx-auto w-full max-w-[430px]"
-            : "mx-auto flex max-w-5xl flex-col gap-8 px-4 py-8 lg:flex-row lg:items-start lg:py-10"
-        }
-      >
-        {!native && (
-          <aside className="lg:sticky lg:top-10 lg:w-[300px]">
-            <p className="text-[12px] font-semibold uppercase tracking-[0.16em] text-[#6B9CFF]">
-              Unofficial LARP
-            </p>
-            <h1 className="mt-2 text-3xl font-semibold">Coinbase-style simulator</h1>
-            <p className="mt-3 text-sm leading-6 text-white/60">
-              Fake account, huge bag, live prices. Sends and trades complete on-device and mint a
-              random transaction ID. Not Coinbase. No real money.
-            </p>
-          </aside>
-        )}
-        <div className="mx-auto w-full max-w-[430px]">
-          <AppProvider>
-            <CoinbaseApp />
-          </AppProvider>
-        </div>
+      <AppProvider>
+        <Shell native={native} />
+      </AppProvider>
+    </div>
+  );
+}
+
+function Shell({ native }: { native: boolean }) {
+  const { state } = useApp();
+  const showAside = !native && state.showDisclaimers;
+  return (
+    <div
+      className={
+        native
+          ? "mx-auto w-full max-w-[430px]"
+          : "mx-auto flex max-w-5xl flex-col gap-8 px-4 py-8 lg:flex-row lg:items-start lg:py-10"
+      }
+    >
+      {showAside && (
+        <aside className="lg:sticky lg:top-10 lg:w-[300px]">
+          <p className="text-[12px] font-semibold uppercase tracking-[0.16em] text-[#6B9CFF]">
+            Simulator
+          </p>
+          <h1 className="mt-2 text-3xl font-semibold">Coinbase-style LARP</h1>
+          <p className="mt-3 text-sm leading-6 text-white/60">
+            Labels are on. Turn them off in Account → Show simulator labels.
+          </p>
+        </aside>
+      )}
+      <div className="mx-auto w-full max-w-[430px]">
+        <CoinbaseApp />
       </div>
     </div>
   );

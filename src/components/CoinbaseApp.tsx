@@ -9,14 +9,18 @@ import { AssetsTab, MarketsTab } from "./cb/MarketsAssets";
 import { PayTab, TradeTab } from "./cb/TradePay";
 import { Overlays } from "./cb/Overlays";
 import { cn } from "@/lib/utils";
+import { DISCLAIMER_KEY } from "@/lib/ids";
 import { useEffect, useState } from "react";
 
 export function CoinbaseApp() {
   const { state, tab, setTab } = useApp();
-  const [ok, setOk] = useState(false);
+  const [seen, setSeen] = useState<boolean | null>(null);
 
   useEffect(() => {
-    if (sessionStorage.getItem("cb-larp-ok") === "1") setOk(true);
+    const accepted =
+      localStorage.getItem(DISCLAIMER_KEY) === "1" || sessionStorage.getItem("cb-larp-ok") === "1";
+    if (accepted) localStorage.setItem(DISCLAIMER_KEY, "1");
+    setSeen(accepted);
   }, []);
 
   return (
@@ -27,19 +31,22 @@ export function CoinbaseApp() {
         <span>100%</span>
       </div>
 
-      {!ok ? (
+      {seen === null ? (
+        <div className="flex-1" />
+      ) : !seen ? (
         <div className="flex flex-1 flex-col justify-center px-6">
           <h1 className="text-[26px] font-semibold">Not a real Coinbase account</h1>
           <p className="mt-3 text-[14px] leading-6 text-white/60">
             This is a LARP simulator. Trades and sends only update this phone. They generate fake
-            transaction IDs. No seed phrase. Not affiliated with Coinbase.
+            transaction IDs. No seed phrase. Not affiliated with Coinbase. This notice will not
+            show again.
           </p>
           <button
             type="button"
             className="mt-8 h-12 rounded-full bg-[#0052FF] font-semibold"
             onClick={() => {
-              sessionStorage.setItem("cb-larp-ok", "1");
-              setOk(true);
+              localStorage.setItem(DISCLAIMER_KEY, "1");
+              setSeen(true);
             }}
           >
             I understand

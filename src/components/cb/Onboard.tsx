@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { CoinbaseMark } from "../CoinbaseMark";
+import { Note } from "../Note";
 import { useApp } from "@/lib/app-context";
 
 export function Onboard() {
@@ -9,15 +10,15 @@ export function Onboard() {
   const [firstName, setFirst] = useState("Alex");
   const [lastName, setLast] = useState("Rivera");
   const [username, setUser] = useState("arivera");
-  const [email, setEmail] = useState("alex@larp.local");
+  const [email, setEmail] = useState("alex@email.com");
 
   return (
     <div className="flex h-full flex-col bg-[#0A0B0D] px-5 pt-10">
       <CoinbaseMark size={40} />
       <h1 className="mt-6 text-[28px] font-semibold tracking-tight">Create your account</h1>
-      <p className="mt-2 text-[14px] text-white/55">
-        Local LARP profile only. No KYC, no real Coinbase account, no real money.
-      </p>
+      <Note className="mt-2 text-[14px] text-white/55">
+        Local profile only. No KYC, no real Coinbase account, no real money.
+      </Note>
       <label className="mt-6 text-[12px] text-white/45">First name</label>
       <input className="field" value={firstName} onChange={(e) => setFirst(e.target.value)} />
       <label className="mt-3 text-[12px] text-white/45">Last name</label>
@@ -34,7 +35,7 @@ export function Onboard() {
             firstName: firstName.trim() || "Alex",
             lastName: lastName.trim() || "Rivera",
             username: username.trim() || "arivera",
-            email: email.trim() || "alex@larp.local",
+            email: email.trim() || "alex@email.com",
           })
         }
       >

@@ -21,7 +21,9 @@ export function HomeTab() {
           <span className="text-[16px] font-semibold">Coinbase</span>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-[11px] text-white/40">{pricesLive ? marketSource : "offline"}</span>
+          {state.showDisclaimers && (
+            <span className="text-[11px] text-white/40">{pricesLive ? marketSource : "offline"}</span>
+          )}
           <button type="button" onClick={() => setOverlay("profile")} className="text-white/70">
             <Bell size={18} />
           </button>
@@ -40,7 +42,6 @@ export function HomeTab() {
       <p className={cn("px-4 text-[14px]", down ? "text-[#F0616D]" : "text-[#3DDC97]")}>
         {formatUsd(dayChangeUsd)} ({formatPct(dayChangePct)})
       </p>
-      <p className="px-4 pt-1 text-[11px] text-white/35">LARP balance · live market prices · not real funds</p>
 
       <div className="mt-4 grid grid-cols-4 gap-2 px-4">
         <Action label="Buy" onClick={() => setOverlay("buy")} />

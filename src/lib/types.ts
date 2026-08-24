@@ -37,6 +37,7 @@ export type AppState = {
   cashUsd: number;
   tokens: Token[];
   activity: ActivityItem[];
+  showDisclaimers: boolean;
 };
 
 export type Tab = "home" | "markets" | "trade" | "pay" | "assets";

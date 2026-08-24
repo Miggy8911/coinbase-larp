@@ -23,3 +23,5 @@ export function nowLabel(): string {
     minute: "2-digit",
   });
 }
+
+export const DISCLAIMER_KEY = "cb-disclaimer-seen-v1";

@@ -40,6 +40,7 @@ type Ctx = {
   convert: (fromId: string, toId: string, amount: number) => ActivityItem;
   receiveCrypto: (tokenId: string, amount: number) => ActivityItem;
   resetBag: () => void;
+  setShowDisclaimers: (v: boolean) => void;
 };
 
 const AppCtx = createContext<Ctx | null>(null);
@@ -49,6 +50,7 @@ const EMPTY: AppState = {
   cashUsd: 2_875_420.18,
   tokens: CATALOG,
   activity: [],
+  showDisclaimers: false,
 };
 
 function pushTx(
@@ -92,6 +94,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           ...EMPTY,
           ...parsed,
           tokens: parsed.tokens?.length ? parsed.tokens : CATALOG,
+          showDisclaimers: parsed.showDisclaimers === true,
         });
       }
     } catch {
@@ -305,7 +308,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, [finish]);
 
   const resetBag = useCallback(() => {
-    setState((s) => ({ ...EMPTY, account: s.account }));
+    setState((s) => ({
+      ...EMPTY,
+      account: s.account,
+      showDisclaimers: s.showDisclaimers,
+    }));
+  }, []);
+
+  const setShowDisclaimers = useCallback((v: boolean) => {
+    setState((s) => ({ ...s, showDisclaimers: v }));
   }, []);
 
   const tokenUsd = useMemo(
@@ -343,6 +354,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       convert,
       receiveCrypto,
       resetBag,
+      setShowDisclaimers,
     }),
     [
       state,
@@ -365,6 +377,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       convert,
       receiveCrypto,
       resetBag,
+      setShowDisclaimers,
     ]
   );
 

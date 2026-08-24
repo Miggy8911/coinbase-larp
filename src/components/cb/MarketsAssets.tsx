@@ -2,6 +2,7 @@
 
 import { Sparkline } from "../Sparkline";
 import { TokenGlyph } from "../TokenGlyph";
+import { Note } from "../Note";
 import { useApp } from "@/lib/app-context";
 import { formatPct, formatPrice, formatUsd } from "@/lib/utils";
 
@@ -10,7 +11,7 @@ export function MarketsTab() {
   return (
     <div className="flex h-full flex-col">
       <h1 className="px-4 pt-4 text-[22px] font-semibold">Markets</h1>
-      <p className="px-4 text-[12px] text-white/45">Live prices. Tap Buy to LARP a fill.</p>
+      <Note className="px-4">Live prices. Buys complete on this device only.</Note>
       <ul className="mt-2 flex-1 overflow-y-auto px-2 pb-4">
         {state.tokens.map((t) => {
           const neg = t.change24h < 0;
@@ -55,7 +56,7 @@ export function AssetsTab() {
         onClick={() => setOverlay("balances")}
         className="mx-4 mt-3 h-10 rounded-full bg-[#1e2026] text-[13px] font-semibold"
       >
-        Edit LARP amounts
+        Edit balances
       </button>
       <ul className="mt-3 px-2 pb-6">
         <li className="flex items-center justify-between px-2 py-3">
