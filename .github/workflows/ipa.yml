@@ -1,0 +1,38 @@
+name: Build Sideloadly IPA
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+jobs:
+  ipa:
+    name: macOS compile
+    runs-on: macos-latest
+    timeout-minutes: 45
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Compile unsigned IPA
+        run: npm run ipa
+
+      - name: Upload CoinbaseLARP.ipa
+        uses: actions/upload-artifact@v4
+        with:
+          name: CoinbaseLARP
+          path: dist/CoinbaseLARP.ipa
+          if-no-files-found: error
+          retention-days: 14

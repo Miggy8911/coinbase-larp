@@ -15,25 +15,37 @@ Prices stream from Coinbase’s public ticker websocket (REST fallback). Home ha
 
 ## Sideload an .ipa (iPhone)
 
-An IPA **must be compiled on a Mac with Xcode**. This Linux environment cannot produce an installable iPhone binary — Apple does not allow iOS apps to be built on Linux.
+Apple only lets Xcode compile iPhone apps on macOS. This Linux preview cannot emit an IPA, and a macOS VM on non-Apple hardware is not allowed.
 
-On a Mac:
+### Online Mac (GitHub Actions)
 
-```bash
-npm install
-npm run ipa
-```
+GitHub gives you a real Mac runner. That is the hosted build.
 
-That writes `dist/CoinbaseLARP.ipa`.
+1. Create a GitHub repository (private is fine)
+2. Push this project to `main`
+3. Open **Actions** → **Build Sideloadly IPA** → **Run workflow**
+4. When it finishes, download the **CoinbaseLARP** artifact
+5. Unzip it to get `CoinbaseLARP.ipa`
+
+Then Sideloadly:
 
 1. Install [Sideloadly](https://sideloadly.io/)
-2. Plug in the iPhone, trust the computer
-3. IPA = `dist/CoinbaseLARP.ipa`
+2. Plug in the iPhone and tap Trust
+3. IPA = `CoinbaseLARP.ipa`
 4. Apple ID = yours (free is fine)
 5. Start
 
 On the phone: Settings → General → VPN & Device Management → trust the developer.
 
 Free Apple IDs expire in 7 days; run Sideloadly again when the app won’t open.
+
+### Local Mac
+
+```bash
+npm install
+npm run ipa
+```
+
+That writes `dist/CoinbaseLARP.ipa`. Same Sideloadly steps.
 
 Simulator labels stay off unless you enable them in Account.
