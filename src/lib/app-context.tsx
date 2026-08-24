@@ -1,8 +1,9 @@
 "use client";
 
 import { CATALOG } from "./defaults";
-import { fetchMarket } from "./market";
+import { startLiveFeed } from "./live";
 import { coinbaseRef, hexTx, nowLabel, uid } from "./ids";
+import { getQuotes, livePrice, seedQuotesFromTokens } from "./quotes-store";
 import type { Account, ActivityItem, AppState, Overlay, Tab, TxKind } from "./types";
 import {
   createContext,
@@ -26,12 +27,6 @@ type Ctx = {
   assetId: string | null;
   openAsset: (id: string) => void;
   receipt: Receipt;
-  totalUsd: number;
-  tokenUsd: number;
-  dayChangeUsd: number;
-  dayChangePct: number;
-  pricesLive: boolean;
-  marketSource: string;
   createAccount: (account: Account) => void;
   updateAccount: (patch: Partial<Account>) => void;
   updateTokenAmount: (id: string, amount: number) => void;
@@ -85,80 +80,56 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [overlay, setOverlay] = useState<Overlay>("none");
   const [assetId, setAssetId] = useState<string | null>(null);
   const [receipt, setReceipt] = useState<Receipt>(null);
-  const [pricesLive, setPricesLive] = useState(false);
-  const [marketSource, setMarketSource] = useState("connecting");
 
   useEffect(() => {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) {
         const parsed = JSON.parse(raw) as Partial<AppState>;
+        const tokens = (parsed.tokens?.length ? parsed.tokens : CATALOG).map((tok) => {
+          const base = CATALOG.find((c) => c.id === tok.id) ?? CATALOG[0];
+          return { ...base, ...tok, sparkline: tok.sparkline ?? [] };
+        });
         setState({
           ...EMPTY,
           ...parsed,
-          tokens: (parsed.tokens?.length ? parsed.tokens : CATALOG).map((tok) => {
-            const base = CATALOG.find((c) => c.id === tok.id) ?? CATALOG[0];
-            return { ...base, ...tok, sparkline: tok.sparkline ?? [] };
-          }),
+          tokens,
           showDisclaimers: parsed.showDisclaimers === true,
         });
+        seedQuotesFromTokens(tokens);
+      } else {
+        seedQuotesFromTokens(CATALOG);
       }
     } catch {
-      /* ignore */
+      seedQuotesFromTokens(CATALOG);
     }
     setHydrated(true);
   }, []);
 
   useEffect(() => {
     if (!hydrated) return;
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    const id = window.setTimeout(() => {
+      const quotes = getQuotes().byId;
+      const slim: AppState = {
+        ...state,
+        tokens: state.tokens.map((t) => {
+          const q = quotes[t.coingeckoId];
+          return {
+            ...t,
+            priceUsd: q?.usd || t.priceUsd,
+            change24h: q?.usd_24h_change || t.change24h,
+            sparkline: [],
+          };
+        }),
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(slim));
+    }, 1200);
+    return () => window.clearTimeout(id);
   }, [state, hydrated]);
 
   useEffect(() => {
     if (!hydrated) return;
-    let cancelled = false;
-    async function load() {
-      try {
-        const snap = await fetchMarket(state.tokens);
-        if (cancelled) return;
-        setPricesLive(Object.keys(snap.quotes).length > 0);
-        setMarketSource(snap.source);
-        setState((prev) => ({
-          ...prev,
-          tokens: prev.tokens.map((t) => {
-            const p = snap.quotes[t.coingeckoId];
-            if (!p) return t;
-            return {
-              ...t,
-              priceUsd: p.usd || t.priceUsd,
-              change24h: p.usd_24h_change,
-              change1h: p.change1h ?? t.change1h,
-              change7d: p.change7d ?? t.change7d,
-              change30d: p.change30d ?? t.change30d,
-              change1y: p.change1y ?? t.change1y,
-              marketCap: p.marketCap || t.marketCap,
-              volume24h: p.volume24h || t.volume24h,
-              high24h: p.high24h || t.high24h,
-              low24h: p.low24h || t.low24h,
-              ath: p.ath || t.ath,
-              atl: p.atl || t.atl,
-              rank: p.rank || t.rank,
-              circSupply: p.circSupply || t.circSupply,
-              sparkline: p.sparkline.length ? p.sparkline : t.sparkline,
-            };
-          }),
-        }));
-      } catch {
-        setPricesLive(false);
-      }
-    }
-    load();
-    const id = setInterval(load, 15_000);
-    return () => {
-      cancelled = true;
-      clearInterval(id);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    return startLiveFeed(CATALOG);
   }, [hydrated]);
 
   const openAsset = useCallback((id: string) => {
@@ -193,142 +164,161 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setState((s) => ({ ...s, cashUsd: n }));
   }, []);
 
-  const sendCrypto = useCallback((tokenId: string, amount: number, to: string) => {
-    let created!: ActivityItem;
-    setState((s) => {
-      const token = s.tokens.find((x) => x.id === tokenId);
-      if (!token) return s;
-      const usd = amount * token.priceUsd;
-      const { next, item } = pushTx(
-        {
-          ...s,
-          tokens: s.tokens.map((x) =>
-            x.id === tokenId ? { ...x, amount: Math.max(0, x.amount - amount) } : x
-          ),
-        },
-        "send",
-        `Sent ${token.symbol}`,
-        `To ${to}`,
-        `-${amount} ${token.symbol}`,
-        -usd,
-        true
-      );
-      created = item;
-      return next;
-    });
-    if (created) finish(created);
-    return created;
-  }, [finish]);
+  const sendCrypto = useCallback(
+    (tokenId: string, amount: number, to: string) => {
+      let created!: ActivityItem;
+      setState((s) => {
+        const token = s.tokens.find((x) => x.id === tokenId);
+        if (!token) return s;
+        const usd = amount * livePrice(token);
+        const { next, item } = pushTx(
+          {
+            ...s,
+            tokens: s.tokens.map((x) =>
+              x.id === tokenId ? { ...x, amount: Math.max(0, x.amount - amount) } : x
+            ),
+          },
+          "send",
+          `Sent ${token.symbol}`,
+          `To ${to}`,
+          `-${amount} ${token.symbol}`,
+          -usd,
+          true
+        );
+        created = item;
+        return next;
+      });
+      if (created) finish(created);
+      return created;
+    },
+    [finish]
+  );
 
-  const buyCrypto = useCallback((tokenId: string, usd: number) => {
-    let created!: ActivityItem;
-    setState((s) => {
-      const token = s.tokens.find((x) => x.id === tokenId);
-      if (!token || token.priceUsd <= 0) return s;
-      const qty = usd / token.priceUsd;
-      const { next, item } = pushTx(
-        {
-          ...s,
-          cashUsd: Math.max(0, s.cashUsd - usd),
-          tokens: s.tokens.map((x) => (x.id === tokenId ? { ...x, amount: x.amount + qty } : x)),
-        },
-        "buy",
-        `Bought ${token.symbol}`,
-        "USD balance",
-        `+${qty.toPrecision(6)} ${token.symbol}`,
-        usd,
-        false
-      );
-      created = item;
-      return next;
-    });
-    if (created) finish(created);
-    return created;
-  }, [finish]);
+  const buyCrypto = useCallback(
+    (tokenId: string, usd: number) => {
+      let created!: ActivityItem;
+      setState((s) => {
+        const token = s.tokens.find((x) => x.id === tokenId);
+        const px = token ? livePrice(token) : 0;
+        if (!token || px <= 0) return s;
+        const qty = usd / px;
+        const { next, item } = pushTx(
+          {
+            ...s,
+            cashUsd: Math.max(0, s.cashUsd - usd),
+            tokens: s.tokens.map((x) => (x.id === tokenId ? { ...x, amount: x.amount + qty } : x)),
+          },
+          "buy",
+          `Bought ${token.symbol}`,
+          "USD balance",
+          `+${qty.toPrecision(6)} ${token.symbol}`,
+          usd,
+          false
+        );
+        created = item;
+        return next;
+      });
+      if (created) finish(created);
+      return created;
+    },
+    [finish]
+  );
 
-  const sellCrypto = useCallback((tokenId: string, amount: number) => {
-    let created!: ActivityItem;
-    setState((s) => {
-      const token = s.tokens.find((x) => x.id === tokenId);
-      if (!token) return s;
-      const usd = amount * token.priceUsd;
-      const { next, item } = pushTx(
-        {
-          ...s,
-          cashUsd: s.cashUsd + usd,
-          tokens: s.tokens.map((x) =>
-            x.id === tokenId ? { ...x, amount: Math.max(0, x.amount - amount) } : x
-          ),
-        },
-        "sell",
-        `Sold ${token.symbol}`,
-        "USD balance",
-        `-${amount} ${token.symbol}`,
-        usd,
-        false
-      );
-      created = item;
-      return next;
-    });
-    if (created) finish(created);
-    return created;
-  }, [finish]);
+  const sellCrypto = useCallback(
+    (tokenId: string, amount: number) => {
+      let created!: ActivityItem;
+      setState((s) => {
+        const token = s.tokens.find((x) => x.id === tokenId);
+        if (!token) return s;
+        const usd = amount * livePrice(token);
+        const { next, item } = pushTx(
+          {
+            ...s,
+            cashUsd: s.cashUsd + usd,
+            tokens: s.tokens.map((x) =>
+              x.id === tokenId ? { ...x, amount: Math.max(0, x.amount - amount) } : x
+            ),
+          },
+          "sell",
+          `Sold ${token.symbol}`,
+          "USD balance",
+          `-${amount} ${token.symbol}`,
+          usd,
+          false
+        );
+        created = item;
+        return next;
+      });
+      if (created) finish(created);
+      return created;
+    },
+    [finish]
+  );
 
-  const convert = useCallback((fromId: string, toId: string, amount: number) => {
-    let created!: ActivityItem;
-    setState((s) => {
-      const from = s.tokens.find((x) => x.id === fromId);
-      const to = s.tokens.find((x) => x.id === toId);
-      if (!from || !to || from.priceUsd <= 0 || to.priceUsd <= 0) return s;
-      const usd = amount * from.priceUsd;
-      const got = usd / to.priceUsd;
-      const { next, item } = pushTx(
-        {
-          ...s,
-          tokens: s.tokens.map((x) => {
-            if (x.id === fromId) return { ...x, amount: Math.max(0, x.amount - amount) };
-            if (x.id === toId) return { ...x, amount: x.amount + got };
-            return x;
-          }),
-        },
-        "convert",
-        `Converted ${from.symbol} → ${to.symbol}`,
-        "Internal",
-        `${amount} ${from.symbol}`,
-        usd,
-        false
-      );
-      created = item;
-      return next;
-    });
-    if (created) finish(created);
-    return created;
-  }, [finish]);
+  const convert = useCallback(
+    (fromId: string, toId: string, amount: number) => {
+      let created!: ActivityItem;
+      setState((s) => {
+        const from = s.tokens.find((x) => x.id === fromId);
+        const to = s.tokens.find((x) => x.id === toId);
+        if (!from || !to) return s;
+        const fromPx = livePrice(from);
+        const toPx = livePrice(to);
+        if (fromPx <= 0 || toPx <= 0) return s;
+        const usd = amount * fromPx;
+        const got = usd / toPx;
+        const { next, item } = pushTx(
+          {
+            ...s,
+            tokens: s.tokens.map((x) => {
+              if (x.id === fromId) return { ...x, amount: Math.max(0, x.amount - amount) };
+              if (x.id === toId) return { ...x, amount: x.amount + got };
+              return x;
+            }),
+          },
+          "convert",
+          `Converted ${from.symbol} → ${to.symbol}`,
+          "Internal",
+          `${amount} ${from.symbol}`,
+          usd,
+          false
+        );
+        created = item;
+        return next;
+      });
+      if (created) finish(created);
+      return created;
+    },
+    [finish]
+  );
 
-  const receiveCrypto = useCallback((tokenId: string, amount: number) => {
-    let created!: ActivityItem;
-    setState((s) => {
-      const token = s.tokens.find((x) => x.id === tokenId);
-      if (!token) return s;
-      const usd = amount * token.priceUsd;
-      const { next, item } = pushTx(
-        {
-          ...s,
-          tokens: s.tokens.map((x) => (x.id === tokenId ? { ...x, amount: x.amount + amount } : x)),
-        },
-        "receive",
-        `Received ${token.symbol}`,
-        "From external wallet",
-        `+${amount} ${token.symbol}`,
-        usd,
-        true
-      );
-      created = item;
-      return next;
-    });
-    if (created) finish(created);
-    return created;
-  }, [finish]);
+  const receiveCrypto = useCallback(
+    (tokenId: string, amount: number) => {
+      let created!: ActivityItem;
+      setState((s) => {
+        const token = s.tokens.find((x) => x.id === tokenId);
+        if (!token) return s;
+        const usd = amount * livePrice(token);
+        const { next, item } = pushTx(
+          {
+            ...s,
+            tokens: s.tokens.map((x) => (x.id === tokenId ? { ...x, amount: x.amount + amount } : x)),
+          },
+          "receive",
+          `Received ${token.symbol}`,
+          "From external wallet",
+          `+${amount} ${token.symbol}`,
+          usd,
+          true
+        );
+        created = item;
+        return next;
+      });
+      if (created) finish(created);
+      return created;
+    },
+    [finish]
+  );
 
   const resetBag = useCallback(() => {
     setState((s) => ({
@@ -342,17 +332,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setState((s) => ({ ...s, showDisclaimers: v }));
   }, []);
 
-  const tokenUsd = useMemo(
-    () => state.tokens.reduce((sum, t) => sum + t.amount * t.priceUsd, 0),
-    [state.tokens]
-  );
-  const totalUsd = tokenUsd + state.cashUsd;
-  const dayChangeUsd = useMemo(
-    () => state.tokens.reduce((sum, t) => sum + t.amount * t.priceUsd * (t.change24h / 100), 0),
-    [state.tokens]
-  );
-  const dayChangePct = tokenUsd > 0 ? (dayChangeUsd / tokenUsd) * 100 : 0;
-
   const value = useMemo(
     () => ({
       state,
@@ -363,12 +342,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       assetId,
       openAsset,
       receipt,
-      totalUsd,
-      tokenUsd,
-      dayChangeUsd,
-      dayChangePct,
-      pricesLive,
-      marketSource,
       createAccount,
       updateAccount,
       updateTokenAmount,
@@ -388,12 +361,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       assetId,
       openAsset,
       receipt,
-      totalUsd,
-      tokenUsd,
-      dayChangeUsd,
-      dayChangePct,
-      pricesLive,
-      marketSource,
       createAccount,
       updateAccount,
       updateTokenAmount,

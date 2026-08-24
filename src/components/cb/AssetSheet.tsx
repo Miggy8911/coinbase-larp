@@ -1,13 +1,16 @@
 "use client";
 
 import { AreaChart } from "../Sparkline";
+import { SmoothUsd } from "../SmoothUsd";
 import { TokenGlyph } from "../TokenGlyph";
 import { useApp } from "@/lib/app-context";
-import { cn, formatCompact, formatPct, formatPrice, formatUsd, sliceSpark } from "@/lib/utils";
+import { useHoldings } from "@/lib/quotes-store";
+import { cn, formatCompact, formatPct, formatPrice, sliceSpark } from "@/lib/utils";
 
 export function AssetSheet() {
   const { state, assetId, setOverlay } = useApp();
-  const t = state.tokens.find((x) => x.id === assetId);
+  const { tokens } = useHoldings(state.tokens, state.cashUsd);
+  const t = tokens.find((x) => x.id === assetId);
   if (!t) return null;
   const neg = t.change24h < 0;
   const color = neg ? "#F0616D" : "#3DDC97";
@@ -23,7 +26,7 @@ export function AssetSheet() {
     ["All-time low", t.atl ? formatPrice(t.atl) : "—"],
   ];
   return (
-    <div className="flex-1 overflow-y-auto px-4 pb-8">
+    <div className="flex-1 overflow-y-auto overscroll-y-contain px-4 pb-8">
       <div className="flex items-center gap-3">
         <TokenGlyph symbol={t.symbol} color={t.color} size={44} />
         <div>
@@ -31,14 +34,16 @@ export function AssetSheet() {
           <p className="text-[22px] font-semibold">{t.symbol}</p>
         </div>
       </div>
-      <p className="mt-5 text-[36px] font-semibold tracking-tight">{formatPrice(t.priceUsd)}</p>
-      <p className={cn("text-[15px] font-medium", neg ? "text-[#F0616D]" : "text-[#3DDC97]")}>
+      <p className="mt-5 text-[36px] font-semibold tracking-tight">
+        <SmoothUsd value={t.priceUsd} compact={false} />
+      </p>
+      <p className={cn("text-[15px] font-medium tabular-nums", neg ? "text-[#F0616D]" : "text-[#3DDC97]")}>
         {formatPct(t.change24h)} · 24h
       </p>
       <div className="mt-3">
         <AreaChart points={sliceSpark(t.sparkline, 1)} color={color} height={140} />
       </div>
-      <div className="mt-2 flex justify-between text-[12px] text-white/40">
+      <div className="mt-2 flex justify-between text-[12px] text-white/40 tabular-nums">
         <span>1H {formatPct(t.change1h)}</span>
         <span>1W {formatPct(t.change7d)}</span>
         <span>1M {formatPct(t.change30d)}</span>
@@ -47,8 +52,10 @@ export function AssetSheet() {
 
       <div className="mt-5 rounded-2xl bg-[#16181D] p-4">
         <p className="text-[12px] text-white/45">Your balance</p>
-        <p className="text-[22px] font-semibold">{formatUsd(held)}</p>
-        <p className="text-[13px] text-white/45">
+        <p className="text-[22px] font-semibold">
+          <SmoothUsd value={held} />
+        </p>
+        <p className="text-[13px] text-white/45 tabular-nums">
           {t.amount.toLocaleString("en-US", { maximumFractionDigits: 6 })} {t.symbol}
         </p>
       </div>
@@ -57,14 +64,14 @@ export function AssetSheet() {
         <button
           type="button"
           onClick={() => setOverlay("buy")}
-          className="h-12 rounded-full bg-[#0052FF] text-[14px] font-semibold"
+          className="tap h-12 rounded-full bg-[#0052FF] text-[14px] font-semibold"
         >
           Buy
         </button>
         <button
           type="button"
           onClick={() => setOverlay("sell")}
-          className="h-12 rounded-full bg-[#1C1F26] text-[14px] font-semibold"
+          className="tap h-12 rounded-full bg-[#1C1F26] text-[14px] font-semibold"
         >
           Sell
         </button>
@@ -75,7 +82,7 @@ export function AssetSheet() {
         {stats.map(([k, v]) => (
           <li key={k} className="flex items-center justify-between py-3 text-[14px]">
             <span className="text-white/50">{k}</span>
-            <span className="font-medium">{v}</span>
+            <span className="font-medium tabular-nums">{v}</span>
           </li>
         ))}
       </ul>

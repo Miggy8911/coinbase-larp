@@ -1,4 +1,6 @@
-export function Sparkline({
+import { memo } from "react";
+
+export const Sparkline = memo(function Sparkline({
   points,
   color,
   width = 72,
@@ -27,9 +29,9 @@ export function Sparkline({
       <path d={d} fill="none" stroke={color} strokeWidth="1.6" strokeLinejoin="round" />
     </svg>
   );
-}
+});
 
-export function AreaChart({
+export const AreaChart = memo(function AreaChart({
   points,
   color,
   height = 168,
@@ -65,4 +67,4 @@ export function AreaChart({
       <path d={line} fill="none" stroke={color} strokeWidth="2.2" strokeLinejoin="round" strokeLinecap="round" />
     </svg>
   );
-}
+});

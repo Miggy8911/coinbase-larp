@@ -11,7 +11,7 @@ npm run dev
 
 http://localhost:43123
 
-Home has a portfolio chart (1H–ALL), movers, watchlist. Open an asset for market cap, volume, ATH/ATL, 24h range, and period returns.
+Prices stream from Coinbase’s public ticker websocket (REST fallback). Home has a portfolio chart (1H–ALL), movers, watchlist. Open an asset for market cap, volume, ATH/ATL, 24h range, and period returns.
 
 ## Sideload an .ipa (iPhone)
 

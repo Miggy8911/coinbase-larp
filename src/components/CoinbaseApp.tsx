@@ -43,7 +43,7 @@ export function CoinbaseApp() {
           </p>
           <button
             type="button"
-            className="mt-8 h-12 rounded-full bg-[#0052FF] font-semibold"
+            className="tap mt-8 h-12 rounded-full bg-[#0052FF] font-semibold"
             onClick={() => {
               localStorage.setItem(DISCLAIMER_KEY, "1");
               setSeen(true);
@@ -57,11 +57,21 @@ export function CoinbaseApp() {
       ) : (
         <>
           <div className="relative min-h-0 flex-1">
-            {tab === "home" && <HomeTab />}
-            {tab === "markets" && <MarketsTab />}
-            {tab === "trade" && <TradeTab />}
-            {tab === "pay" && <PayTab />}
-            {tab === "assets" && <AssetsTab />}
+            <div className={cn("h-full", tab !== "home" && "hidden")}>
+              <HomeTab />
+            </div>
+            <div className={cn("h-full", tab !== "markets" && "hidden")}>
+              <MarketsTab />
+            </div>
+            <div className={cn("h-full", tab !== "trade" && "hidden")}>
+              <TradeTab />
+            </div>
+            <div className={cn("h-full", tab !== "pay" && "hidden")}>
+              <PayTab />
+            </div>
+            <div className={cn("h-full", tab !== "assets" && "hidden")}>
+              <AssetsTab />
+            </div>
             <Overlays />
           </div>
           <nav className="grid grid-cols-5 border-t border-white/8 bg-[#0A0B0D] px-1 pt-1 pb-[max(0.35rem,env(safe-area-inset-bottom))]">
@@ -105,13 +115,13 @@ function Nav({
       type="button"
       onClick={onClick}
       className={cn(
-        "flex flex-col items-center gap-0.5 text-[10px]",
+        "tap flex flex-col items-center gap-0.5 text-[10px] transition-colors duration-150",
         active ? "text-white" : "text-white/40"
       )}
     >
       <span
         className={cn(
-          "flex items-center justify-center",
+          "flex items-center justify-center transition-transform duration-150",
           accent ? "h-12 w-12 -mt-4 rounded-full bg-[#0052FF] text-white shadow-lg shadow-blue-900/40" : "h-7 w-7",
           accent && !active && "opacity-90"
         )}

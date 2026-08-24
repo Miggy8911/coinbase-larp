@@ -18,7 +18,7 @@ export type Quote = {
   sparkline: number[];
 };
 
-function emptyQuote(): Quote {
+export function emptyQuote(): Quote {
   return {
     usd: 0,
     usd_24h_change: 0,
@@ -38,28 +38,23 @@ function emptyQuote(): Quote {
   };
 }
 
-export type MarketSnapshot = {
-  quotes: Record<string, Quote>;
-  source: string;
-  chainHint: string;
-};
-
-const SOL_MINT = "So11111111111111111111111111111111111111112";
+function productId(token: Token) {
+  return `${token.symbol}-USD`;
+}
 
 async function fetchCoinbase(tokens: Token[]): Promise<Record<string, Quote>> {
   const out: Record<string, Quote> = {};
   await Promise.all(
     tokens.map(async (t) => {
-      if (!t.coingeckoId || t.coingeckoId === "tether") return;
-      const product = `${t.symbol}-USD`;
+      if (!t.coingeckoId) return;
       try {
-        const res = await fetch(`https://api.exchange.coinbase.com/products/${product}/stats`);
+        const res = await fetch(`https://api.exchange.coinbase.com/products/${productId(t)}/stats`);
         if (!res.ok) return;
         const row = (await res.json()) as { last?: string; open?: string };
         const last = Number(row.last);
         const open = Number(row.open);
-        if (!Number.isFinite(last)) return;
-        const change = Number.isFinite(open) && open > 0 ? ((last - open) / open) * 100 : 0;
+        if (!Number.isFinite(last) || last <= 0) return;
+        const change = open > 0 ? ((last - open) / open) * 100 : 0;
         out[t.coingeckoId] = { ...emptyQuote(), usd: last, usd_24h_change: change };
       } catch {
         /* skip */
@@ -69,54 +64,21 @@ async function fetchCoinbase(tokens: Token[]): Promise<Record<string, Quote>> {
   return out;
 }
 
-async function fetchBinance(tokens: Token[]): Promise<Record<string, Quote>> {
-  const symbols = tokens
-    .map((t) => t.binanceSymbol)
-    .filter((s): s is string => Boolean(s) && s !== "USDTTRY");
-  if (symbols.length === 0) return {};
-  const url = `https://api.binance.com/api/v3/ticker/24hr?symbols=${encodeURIComponent(
-    JSON.stringify(symbols)
-  )}`;
-  const res = await fetch(url);
-  if (!res.ok) throw new Error("binance");
-  const rows = (await res.json()) as
-    | { symbol: string; lastPrice: string; priceChangePercent: string }[]
-    | { code?: number };
-  if (!Array.isArray(rows)) throw new Error("binance");
-  const bySym = Object.fromEntries(tokens.filter((t) => t.binanceSymbol).map((t) => [t.binanceSymbol, t]));
+async function fetchGeckoSimple(tokens: Token[]): Promise<Record<string, Quote>> {
+  const ids = [...new Set(tokens.map((t) => t.coingeckoId).filter(Boolean))];
+  const res = await fetch(
+    `https://api.coingecko.com/api/v3/simple/price?ids=${encodeURIComponent(ids.join(","))}&vs_currencies=usd&include_24hr_change=true`
+  );
+  if (!res.ok) throw new Error("gecko");
+  const data = (await res.json()) as Record<string, { usd?: number; usd_24h_change?: number }>;
   const out: Record<string, Quote> = {};
-  for (const row of rows) {
-    const token = bySym[row.symbol];
-    if (!token) continue;
-    out[token.coingeckoId] = {
-      ...emptyQuote(),
-      usd: Number(row.lastPrice),
-      usd_24h_change: Number(row.priceChangePercent),
-    };
+  for (const [id, row] of Object.entries(data)) {
+    out[id] = { ...emptyQuote(), usd: row.usd ?? 0, usd_24h_change: row.usd_24h_change ?? 0 };
   }
   return out;
 }
 
-async function fetchSparklines(tokens: Token[]): Promise<Record<string, number[]>> {
-  const majors = tokens.filter((t) => t.binanceSymbol && ["BTCUSDT", "ETHUSDT", "SOLUSDT", "BNBUSDT", "XRPUSDT", "DOGEUSDT", "ADAUSDT", "LINKUSDT"].includes(t.binanceSymbol));
-  const entries = await Promise.all(
-    majors.map(async (t) => {
-      try {
-        const res = await fetch(
-          `https://api.binance.com/api/v3/klines?symbol=${t.binanceSymbol}&interval=1h&limit=24`
-        );
-        if (!res.ok) return [t.coingeckoId, []] as const;
-        const klines = (await res.json()) as [number, string, string, string, string][];
-        return [t.coingeckoId, klines.map((k) => Number(k[4]))] as const;
-      } catch {
-        return [t.coingeckoId, []] as const;
-      }
-    })
-  );
-  return Object.fromEntries(entries);
-}
-
-async function fetchGecko(tokens: Token[]): Promise<Record<string, Quote>> {
+async function fetchGeckoDeep(tokens: Token[]): Promise<Record<string, Quote>> {
   const ids = [...new Set(tokens.map((t) => t.coingeckoId).filter(Boolean))];
   const res = await fetch(
     `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${encodeURIComponent(ids.join(","))}&sparkline=true&price_change_percentage=1h,24h,7d,30d,1y`
@@ -142,7 +104,6 @@ async function fetchGecko(tokens: Token[]): Promise<Record<string, Quote>> {
   }[];
   const out: Record<string, Quote> = {};
   for (const row of rows) {
-    const spark = row.sparkline_in_7d?.price ?? [];
     out[row.id] = {
       usd: row.current_price,
       usd_24h_change: row.price_change_percentage_24h ?? 0,
@@ -158,124 +119,42 @@ async function fetchGecko(tokens: Token[]): Promise<Record<string, Quote>> {
       atl: row.atl ?? 0,
       rank: row.market_cap_rank ?? 0,
       circSupply: row.circulating_supply ?? 0,
-      sparkline: spark,
+      sparkline: row.sparkline_in_7d?.price ?? [],
     };
   }
   return out;
 }
 
-async function fetchJupiterSol(): Promise<number | null> {
-  try {
-    const res = await fetch(`https://lite-api.jup.ag/price/v2?ids=${SOL_MINT}`);
-    if (!res.ok) return null;
-    const data = await res.json();
-    const px = Number(data?.data?.[SOL_MINT]?.price);
-    return Number.isFinite(px) ? px : null;
-  } catch {
-    return null;
-  }
+function withStables(quotes: Record<string, Quote>) {
+  if (!quotes.tether?.usd) quotes.tether = { ...emptyQuote(), usd: 1, usd_24h_change: 0 };
+  if (!quotes["usd-coin"]?.usd) quotes["usd-coin"] = { ...(quotes["usd-coin"] ?? emptyQuote()), usd: 1 };
+  return quotes;
 }
 
-async function fetchChainHint(): Promise<string> {
+export async function fetchFastQuotes(tokens: Token[]): Promise<{ quotes: Record<string, Quote>; source: string }> {
+  let quotes: Record<string, Quote> = {};
+  let source = "offline";
   try {
-    const res = await fetch("https://solana-rpc.publicnode.com", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "getSlot" }),
-    });
-    if (!res.ok) return "";
-    const data = await res.json();
-    if (typeof data.result === "number") return `Solana slot ${data.result.toLocaleString()}`;
-  } catch {
-    /* ignore */
-  }
-  try {
-    const res = await fetch("https://eth.llamarpc.com", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "eth_blockNumber" }),
-    });
-    if (!res.ok) return "";
-    const data = await res.json();
-    const n = parseInt(data.result, 16);
-    if (Number.isFinite(n)) return `ETH block ${n.toLocaleString()}`;
-  } catch {
-    /* ignore */
-  }
-  return "";
-}
-
-export async function fetchMarket(tokens: Token[]): Promise<MarketSnapshot> {
-  const quotes: Record<string, Quote> = {};
-  const sources: string[] = [];
-
-  try {
-    Object.assign(quotes, await fetchCoinbase(tokens));
-    if (Object.keys(quotes).length) sources.push("Coinbase");
+    quotes = await fetchCoinbase(tokens);
+    if (Object.keys(quotes).length) source = "Coinbase";
   } catch {
     /* next */
   }
-
-  try {
-    Object.assign(quotes, await fetchBinance(tokens));
-    if (Object.keys(quotes).length && !sources.includes("Binance")) sources.push("Binance");
-  } catch {
-    /* next */
-  }
-
-  try {
-    const gecko = await fetchGecko(tokens);
-    for (const [id, q] of Object.entries(gecko)) {
-        const prev = quotes[id];
-        quotes[id] = {
-          ...(prev ?? emptyQuote()),
-          ...q,
-          usd: prev?.usd || q.usd,
-          usd_24h_change: prev?.usd_24h_change ?? q.usd_24h_change ?? 0,
-          sparkline: q.sparkline.length ? q.sparkline : prev?.sparkline ?? [],
-        };
-    }
-    sources.push("CoinGecko");
-  } catch {
-    /* next */
-  }
-
-  const sol = await fetchJupiterSol();
-  if (sol) {
-    const prev = quotes.solana;
-    quotes.solana = {
-      ...(prev ?? emptyQuote()),
-      usd: sol,
-      usd_24h_change: prev?.usd_24h_change ?? 0,
-      sparkline: prev?.sparkline ?? [],
-    };
-    sources.push("Jupiter");
-  }
-
-  if (!Object.values(quotes).some((q) => q.sparkline.length)) {
+  if (Object.keys(quotes).length < 3) {
     try {
-      const sparks = await fetchSparklines(tokens);
-      for (const [id, spark] of Object.entries(sparks)) {
-        if (!quotes[id]) continue;
-        quotes[id] = { ...quotes[id], sparkline: spark };
-      }
+      quotes = { ...quotes, ...(await fetchGeckoSimple(tokens)) };
+      source = source === "offline" ? "CoinGecko" : `${source} + CoinGecko`;
     } catch {
-      /* ignore */
+      /* offline */
     }
   }
+  return { quotes: withStables(quotes), source };
+}
 
-  // USDT ~ $1 if missing
-  if (!quotes.tether) {
-    quotes.tether = { ...emptyQuote(), usd: 1 };
+export async function fetchDeepMarket(tokens: Token[]): Promise<{ quotes: Record<string, Quote>; source: string }> {
+  try {
+    return { quotes: withStables(await fetchGeckoDeep(tokens)), source: "CoinGecko" };
+  } catch {
+    return { quotes: {}, source: "offline" };
   }
-  if (!quotes["usd-coin"]) {
-    quotes["usd-coin"] = { ...emptyQuote(), usd: 1 };
-  }
-
-  const chainHint = await fetchChainHint();
-  return {
-    quotes,
-    source: sources.join(" + ") || "offline",
-    chainHint,
-  };
 }
