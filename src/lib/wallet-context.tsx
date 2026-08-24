@@ -13,13 +13,16 @@ import { fetchPrices } from "./prices";
 import type { ActivityItem, Screen, Token, WalletState } from "./types";
 import { uid } from "./utils";
 
-const STORAGE_KEY = "phantom-sim-wallet-v1";
+const STORAGE_KEY = "phantom-sim-wallet-v2";
 
 type Ctx = {
   state: WalletState;
   screen: Screen;
   setScreen: (s: Screen) => void;
   totalUsd: number;
+  tokenUsd: number;
+  dayChangeUsd: number;
+  dayChangePct: number;
   updateWallet: (patch: Partial<WalletState>) => void;
   updateToken: (id: string, patch: Partial<Token>) => void;
   addToken: () => void;
@@ -41,7 +44,14 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) setState(JSON.parse(raw));
+      if (raw) {
+        const parsed = JSON.parse(raw) as Partial<WalletState>;
+        setState({
+          ...DEFAULT_STATE,
+          ...parsed,
+          tokens: parsed.tokens?.length ? parsed.tokens : DEFAULT_STATE.tokens,
+        });
+      }
     } catch {
       /* ignore */
     }
@@ -186,10 +196,20 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
     setState(DEFAULT_STATE);
   }, []);
 
-  const totalUsd = useMemo(
+  const tokenUsd = useMemo(
     () => state.tokens.reduce((sum, t) => sum + t.amount * t.priceUsd, 0),
     [state.tokens]
   );
+  const totalUsd = tokenUsd + (state.cashUsd || 0);
+  const dayChangeUsd = useMemo(
+    () =>
+      state.tokens.reduce(
+        (sum, t) => sum + t.amount * t.priceUsd * (t.change24h / 100),
+        0
+      ),
+    [state.tokens]
+  );
+  const dayChangePct = tokenUsd > 0 ? (dayChangeUsd / tokenUsd) * 100 : 0;
 
   const value = useMemo(
     () => ({
@@ -197,6 +217,9 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
       screen,
       setScreen,
       totalUsd,
+      tokenUsd,
+      dayChangeUsd,
+      dayChangePct,
       updateWallet,
       updateToken,
       addToken,
@@ -210,6 +233,9 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
       state,
       screen,
       totalUsd,
+      tokenUsd,
+      dayChangeUsd,
+      dayChangePct,
       updateWallet,
       updateToken,
       addToken,

@@ -27,6 +27,13 @@ export function EditorScreen() {
         className="mt-1 rounded-2xl bg-[#2a2a2a] px-4 py-3 text-sm outline-none"
       />
 
+      <label className="mt-3 text-[12px] text-[#8d8d8d]">Cash (USD, Larpz layout)</label>
+      <input
+        value={String(state.cashUsd ?? 0)}
+        onChange={(e) => updateWallet({ cashUsd: Number(e.target.value) || 0 })}
+        className="mt-1 rounded-2xl bg-[#2a2a2a] px-4 py-3 text-sm outline-none"
+      />
+
       <div className="mt-5 flex items-center justify-between">
         <p className="text-[14px] font-semibold">Tokens</p>
         <button type="button" onClick={addToken} className="text-[13px] font-medium text-[#AB9FF2]">

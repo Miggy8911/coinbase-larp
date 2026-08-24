@@ -1,31 +1,37 @@
 # Phantom-style LARP wallet simulator
 
-A local, entertainment-only wallet UI in the style of Phantom. You type the balances you want, take screenshots, and run fake send/swap flows. **It never connects to a chain, never asks for a seed phrase, and cannot hold or move crypto.**
+Entertainment-only wallet UI. Custom balances, three home layouts, simulated send/swap. **No keys, no chain, no real funds.** Not affiliated with Phantom.
 
-Not affiliated with Phantom.
-
-## Run locally
+## Run in a browser
 
 ```bash
 npm install
-npm run dev -- --port 43123
+npm run dev
 ```
 
-Open [http://localhost:43123](http://localhost:43123). On a phone, add to Home Screen from the browser for a fullscreen look.
+Open http://localhost:43123. Tap the ghost / account / gear to open **Settings** and pick a layout:
 
-## What it does
+- **Larpz list** — black token cards, Home / Trade / Explore, Cash row
+- **Halo ring** — gradient glass cards and an allocation ring
+- **Pulse markets** — Transfer / Swap / Buy plus market chips
 
-- Custom wallet name, display address, token amounts, and USD prices
-- Simulated send / swap that only updates this browser (saved in `localStorage`)
-- Dummy collectibles and activity
-- Optional live USD prices for tokens that have a CoinGecko id (SOL, USDC, JUP, BONK, WIF)
+## Sideload on iPhone (Sideloadly)
+
+Sideloadly installs an **.ipa**. Building that file needs a Mac with Xcode and a free Apple ID. This Linux/web preview cannot sign an IPA for you.
+
+1. On a Mac: `npm install` then `npm run cap:sync`
+2. `npx cap open ios` (opens the Xcode project in `ios/`)
+3. In Xcode, select the **App** target → **Signing & Capabilities** → check **Automatically manage signing** → Team = your Apple ID
+4. Set the bundle id if needed (default `com.larpsim.wallet`)
+5. **Product → Archive**, then **Distribute App → Custom → Debugging** (or Ad Hoc) to export an `.ipa`
+6. Open [Sideloadly](https://sideloadly.io/) on Windows or Mac, pick that IPA, your Apple ID, and your device
+
+Apple’s 7-day free-dev certificate applies. Re-sideload when it expires.
+
+### Without Sideloadly
+
+On iPhone Safari, open the deployed or local site → Share → **Add to Home Screen**. That is a PWA, not a native IPA.
 
 ## What it does not do
 
-- No private keys, seed phrases, or wallet connect
-- No real deposits, withdrawals, or signatures
-- Do not use it to misrepresent holdings or solicit funds
-
-## Stack
-
-Next.js (App Router), TypeScript, Tailwind CSS, React 19.
+No seed phrases, wallet connect, or real transfers. Do not use it to misrepresent holdings or solicit funds.

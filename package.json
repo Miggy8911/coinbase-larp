@@ -6,9 +6,15 @@
     "dev": "next dev --turbopack --port 43123 --hostname 0.0.0.0",
     "build": "next build --turbopack",
     "start": "next start --port 43123 --hostname 0.0.0.0",
-    "lint": "eslint"
+    "lint": "eslint",
+    "build:ios": "CAPACITOR=1 next build",
+    "cap:sync": "CAPACITOR=1 next build && npx cap sync ios",
+    "cap:open": "npx cap open ios"
   },
   "dependencies": {
+    "@capacitor/cli": "^8.5.0",
+    "@capacitor/core": "^8.5.0",
+    "@capacitor/ios": "^8.5.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^0.542.0",

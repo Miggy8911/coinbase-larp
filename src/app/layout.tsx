@@ -14,8 +14,12 @@ export const metadata: Metadata = {
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
-    title: "Wallet Sim",
+    title: "LarpSim",
     statusBarStyle: "black-translucent",
+  },
+  icons: {
+    apple: "/icon-180.png",
+    icon: "/icon-512.png",
   },
 };
 

@@ -7,6 +7,7 @@ export type Token = {
   priceUsd: number;
   change24h: number;
   color: string;
+  verified?: boolean;
 };
 
 export type Collectible = {
@@ -26,9 +27,13 @@ export type ActivityItem = {
   at: string;
 };
 
+export type LayoutId = "larpz" | "halo" | "pulse";
+
 export type WalletState = {
   walletName: string;
   address: string;
+  cashUsd: number;
+  layout: LayoutId;
   tokens: Token[];
   collectibles: Collectible[];
   activity: ActivityItem[];
@@ -41,4 +46,9 @@ export type Screen =
   | "activity"
   | "send"
   | "receive"
-  | "editor";
+  | "editor"
+  | "settings"
+  | "trade"
+  | "explore"
+  | "earn"
+  | "card";

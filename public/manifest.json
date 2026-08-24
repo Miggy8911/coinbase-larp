@@ -1,9 +1,22 @@
 {
-  "name": "Wallet Sim",
-  "short_name": "Wallet Sim",
+  "name": "LARP Wallet Sim",
+  "short_name": "LarpSim",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#1c1c1c",
-  "theme_color": "#1c1c1c",
-  "description": "Entertainment-only Phantom-style wallet simulator. No real funds."
+  "background_color": "#000000",
+  "theme_color": "#000000",
+  "orientation": "portrait",
+  "description": "Entertainment-only wallet simulator. No real funds.",
+  "icons": [
+    {
+      "src": "/icon-180.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
 }
