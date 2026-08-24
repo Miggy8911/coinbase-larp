@@ -54,10 +54,6 @@ select {
   }
 }
 
-html.native-shell .sim-status {
-  display: none;
-}
-
 .field {
   margin-top: 0.25rem;
   width: 100%;

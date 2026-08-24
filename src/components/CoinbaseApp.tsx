@@ -24,13 +24,7 @@ export function CoinbaseApp() {
   }, []);
 
   return (
-    <div className="relative mx-auto flex h-[100dvh] w-full max-w-[430px] flex-col overflow-hidden bg-[#0A0B0D] text-white">
-      <div className="sim-status flex items-center justify-between px-6 pt-[max(0.35rem,env(safe-area-inset-top))] text-[12px] text-white/50">
-        <span>9:41</span>
-        <span className="h-5 w-24 rounded-b-xl bg-black" />
-        <span>100%</span>
-      </div>
-
+    <div className="relative mx-auto flex h-[100dvh] w-full max-w-[430px] flex-col overflow-hidden bg-[#0A0B0D] pt-[env(safe-area-inset-top)] text-white">
       {seen === null ? (
         <div className="flex-1" />
       ) : !seen ? (
