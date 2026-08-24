@@ -40,6 +40,7 @@ type Ctx = {
   receiveCrypto: (tokenId: string, amount: number) => ActivityItem;
   resetBag: () => void;
   setShowDisclaimers: (v: boolean) => void;
+  setEditMode: (v: boolean) => void;
 };
 
 const AppCtx = createContext<Ctx | null>(null);
@@ -50,6 +51,7 @@ const EMPTY: AppState = {
   tokens: CATALOG,
   activity: [],
   showDisclaimers: false,
+  editMode: false,
 };
 
 function pushTx(
@@ -97,6 +99,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           ...parsed,
           tokens,
           showDisclaimers: parsed.showDisclaimers === true,
+          editMode: parsed.editMode === true,
         });
         seedQuotesFromTokens(tokens);
       } else {
@@ -334,11 +337,17 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       ...EMPTY,
       account: s.account,
       showDisclaimers: s.showDisclaimers,
+      editMode: s.editMode,
     }));
   }, []);
 
   const setShowDisclaimers = useCallback((v: boolean) => {
     setState((s) => ({ ...s, showDisclaimers: v }));
+  }, []);
+
+  const setEditMode = useCallback((v: boolean) => {
+    setState((s) => ({ ...s, editMode: v }));
+    if (!v) setOverlay((o) => (o === "balances" ? "profile" : o));
   }, []);
 
   const value = useMemo(
@@ -363,6 +372,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       receiveCrypto,
       resetBag,
       setShowDisclaimers,
+      setEditMode,
     }),
     [
       state,
@@ -383,6 +393,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       receiveCrypto,
       resetBag,
       setShowDisclaimers,
+      setEditMode,
     ]
   );
 

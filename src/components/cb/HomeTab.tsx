@@ -54,7 +54,7 @@ export function HomeTab() {
   const movers = [...tokens].sort((a, b) => Math.abs(b.change24h) - Math.abs(a.change24h)).slice(0, 5);
 
   return (
-    <div className="flex h-full flex-col overflow-y-auto overscroll-y-contain pb-5">
+    <div className="scroll flex h-full flex-col pb-5">
       <header className="flex items-center justify-between px-4 pt-2">
         <CoinbaseMark size={32} />
         <div className="flex items-center gap-3">
@@ -116,27 +116,33 @@ export function HomeTab() {
         />
       </div>
 
-      <section className="mt-7 px-4">
-        <p className="text-[16px] font-semibold">Today&apos;s movers</p>
-        <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
+      <section className="mt-7">
+        <p className="px-4 text-[16px] font-semibold">Today&apos;s movers</p>
+        <ul className="mt-1">
           {movers.map((t) => {
             const neg = t.change24h < 0;
             return (
-              <button
-                key={t.id}
-                type="button"
-                onClick={() => openAsset(t.id)}
-                className="tap min-w-[132px] rounded-2xl bg-[#16181D] p-3 text-left"
-              >
-                <TokenGlyph symbol={t.symbol} color={t.color} size={28} />
-                <p className="mt-2 text-[13px] font-medium">{t.symbol}</p>
-                <p className={cn("text-[13px] font-semibold tabular-nums", neg ? "text-[#F0616D]" : "text-[#3DDC97]")}>
-                  {formatPct(t.change24h)}
-                </p>
-              </button>
+              <li key={t.id}>
+                <button
+                  type="button"
+                  onClick={() => openAsset(t.id)}
+                  className="tap flex w-full items-center gap-3 px-4 py-3 text-left"
+                >
+                  <TokenGlyph symbol={t.symbol} color={t.color} size={32} />
+                  <div className="min-w-0 flex-1">
+                    <div className="flex justify-between text-[15px] font-medium">
+                      <span>{t.name}</span>
+                      <span className={cn("tabular-nums", neg ? "text-[#F0616D]" : "text-[#3DDC97]")}>
+                        {formatPct(t.change24h)}
+                      </span>
+                    </div>
+                    <p className="text-[13px] text-white/45">{t.symbol}</p>
+                  </div>
+                </button>
+              </li>
             );
           })}
-        </div>
+        </ul>
       </section>
 
       <div className="mt-6 flex items-center justify-between px-4">

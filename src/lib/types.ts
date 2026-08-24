@@ -50,6 +50,7 @@ export type AppState = {
   tokens: Token[];
   activity: ActivityItem[];
   showDisclaimers: boolean;
+  editMode: boolean;
 };
 
 export type Tab = "home" | "markets" | "trade" | "pay" | "assets";

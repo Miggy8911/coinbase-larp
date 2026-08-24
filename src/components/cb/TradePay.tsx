@@ -18,7 +18,7 @@ export function TradeTab() {
   const to = tokens.find((t) => t.id === toId);
 
   return (
-    <div className="flex h-full flex-col px-4 pt-4">
+    <div className="scroll flex h-full flex-col px-4 pt-4">
       <h1 className="text-[22px] font-semibold">Trade</h1>
       <div className="mt-3 flex rounded-full bg-[#1e2026] p-1 text-[13px] font-semibold">
         {(["buy", "sell", "convert"] as const).map((m) => (
@@ -134,7 +134,7 @@ export function PayTab() {
         </button>
       </div>
       <p className="mt-6 px-4 text-[13px] font-semibold text-white/70">Recent</p>
-      <ul className="flex-1 overflow-y-auto overscroll-y-contain px-4 pb-4">
+      <ul className="scroll flex-1 px-4 pb-4">
         {state.activity.length === 0 && (
           <li className="py-8 text-center text-[13px] text-white/40">No activity yet</li>
         )}

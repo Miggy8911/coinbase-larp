@@ -5,7 +5,7 @@ const config: CapacitorConfig = {
   appName: "Coinbase",
   webDir: "out",
   ios: {
-    contentInset: "automatic",
+    contentInset: "never",
     backgroundColor: "#000000",
     preferredContentMode: "mobile",
     scheme: "LarpSim",

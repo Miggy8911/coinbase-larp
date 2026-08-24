@@ -25,7 +25,7 @@ export const Sparkline = memo(function Sparkline({
     })
     .join(" ");
   return (
-    <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} className="overflow-visible">
+    <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} className="overflow-hidden">
       <path d={d} fill="none" stroke={color} strokeWidth="1.6" strokeLinejoin="round" />
     </svg>
   );

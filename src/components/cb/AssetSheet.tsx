@@ -29,7 +29,7 @@ export function AssetSheet() {
     ["All-time low", t.atl ? formatPrice(t.atl) : "—"],
   ];
   return (
-    <div className="flex-1 overflow-y-auto overscroll-y-contain px-4 pb-8">
+    <div className="scroll flex-1 px-4 pb-8">
       <div className="flex items-center gap-3">
         <TokenGlyph symbol={t.symbol} color={t.color} size={44} />
         <div>

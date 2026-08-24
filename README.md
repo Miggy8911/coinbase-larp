@@ -11,7 +11,7 @@ npm run dev
 
 http://localhost:43123
 
-Prices stream from Coinbase’s public ticker websocket (REST fallback). Home has a portfolio chart (1H–ALL) that moves with live prices, movers, watchlist. In Account, set a portfolio value like `1 thousand` and it splits across BTC, ETH, SOL, and the rest.
+Prices stream from Coinbase’s public ticker websocket (REST fallback). Home has a portfolio chart (1H–ALL) that moves with live prices, movers, watchlist. Turn on **Edit mode** in Account to set a portfolio value like `1 thousand` (it splits across BTC, ETH, SOL, and the rest) or edit balances. Leave it off and those tools stay hidden.
 
 ## Sideload an .ipa (iPhone)
 

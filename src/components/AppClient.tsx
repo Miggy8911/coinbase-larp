@@ -13,7 +13,7 @@ export function AppClient() {
   }, []);
 
   return (
-    <div className="min-h-[100dvh] bg-black text-white">
+    <div className="h-[100dvh] overflow-hidden bg-black text-white">
       <AppProvider>
         <Shell native={native} />
       </AppProvider>

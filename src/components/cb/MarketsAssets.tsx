@@ -55,7 +55,7 @@ export function MarketsTab() {
           </button>
         ))}
       </div>
-      <ul className="mt-2 flex-1 overflow-y-auto overscroll-y-contain pb-4">
+      <ul className="scroll mt-2 flex-1 pb-4">
         {list.map((t) => {
           const neg = t.change24h < 0;
           return (
@@ -106,7 +106,7 @@ export function AssetsTab() {
   const { tokens, totalUsd, tokenUsd } = useHoldings(state.tokens, state.cashUsd);
   const rows = [...tokens].sort((a, b) => b.amount * b.priceUsd - a.amount * a.priceUsd);
   return (
-    <div className="flex h-full flex-col overflow-y-auto overscroll-y-contain">
+    <div className="scroll flex h-full flex-col">
       <h1 className="px-4 pt-4 text-[28px] font-semibold">Assets</h1>
       <p className="px-4 text-[32px] font-semibold tracking-tight">
         <SmoothUsd value={totalUsd} />
@@ -129,13 +129,15 @@ export function AssetsTab() {
             />
           ))}
       </div>
-      <button
-        type="button"
-        onClick={() => setOverlay("balances")}
-        className="tap mx-4 mt-4 h-10 rounded-full bg-[#1C1F26] text-[13px] font-semibold"
-      >
-        Edit balances
-      </button>
+      {state.editMode ? (
+        <button
+          type="button"
+          onClick={() => setOverlay("balances")}
+          className="tap mx-4 mt-4 h-10 rounded-full bg-[#1C1F26] text-[13px] font-semibold"
+        >
+          Edit balances
+        </button>
+      ) : null}
       <ul className="mt-3 pb-6">
         <li className="flex items-center justify-between px-4 py-3">
           <span>
