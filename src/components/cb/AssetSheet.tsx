@@ -47,11 +47,11 @@ export function AssetSheet() {
       <div className="mt-3">
         <AreaChart points={chart} color={color} height={140} />
       </div>
-      <div className="mt-2 flex justify-between text-[12px] tabular-nums text-cb-muted">
-        <span>1H {formatPct(t.change1h)}</span>
-        <span>1W {formatPct(t.change7d)}</span>
-        <span>1M {formatPct(t.change30d)}</span>
-        <span>1Y {formatPct(t.change1y)}</span>
+      <div className="mt-2 flex justify-between text-[12px] font-medium tabular-nums">
+        <Period label="1H" value={t.change1h} />
+        <Period label="1W" value={t.change7d} />
+        <Period label="1M" value={t.change30d} />
+        <Period label="1Y" value={t.change1y} />
       </div>
 
       <div className="mt-5 rounded-2xl bg-cb-elev p-4">
@@ -91,5 +91,15 @@ export function AssetSheet() {
         ))}
       </ul>
     </div>
+  );
+}
+
+function Period({ label, value }: { label: string; value: number }) {
+  const down = value < 0;
+  const flat = Math.abs(value) < 0.005;
+  return (
+    <span className={flat ? "text-cb-muted" : down ? "text-cb-down" : "text-cb-up"}>
+      {label} {formatPct(value)}
+    </span>
   );
 }

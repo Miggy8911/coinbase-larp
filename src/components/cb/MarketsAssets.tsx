@@ -23,8 +23,8 @@ export function MarketsTab() {
         t.name.toLowerCase().includes(q.toLowerCase()) ||
         t.symbol.toLowerCase().includes(q.toLowerCase())
     );
-    if (sort === "gainers") rows = [...rows].sort((a, b) => b.change24h - a.change24h);
-    else if (sort === "losers") rows = [...rows].sort((a, b) => a.change24h - b.change24h);
+    if (sort === "gainers") rows = rows.filter((t) => t.change24h > 0).sort((a, b) => b.change24h - a.change24h);
+    else if (sort === "losers") rows = rows.filter((t) => t.change24h < 0).sort((a, b) => a.change24h - b.change24h);
     else rows = [...rows].sort((a, b) => (b.marketCap || 0) - (a.marketCap || 0));
     return rows;
   }, [tokens, q, sort]);
@@ -62,7 +62,9 @@ export function MarketsTab() {
       </div>
       <ul className="scroll mt-2 flex-1 pb-4">
         {list.length === 0 && (
-          <li className="px-4 py-10 text-center text-[14px] text-cb-muted">No assets match that search</li>
+          <li className="px-4 py-10 text-center text-[14px] text-cb-muted">
+            {q ? "No assets match that search" : sort === "losers" ? "No losers right now" : sort === "gainers" ? "No gainers right now" : "No assets"}
+          </li>
         )}
         {list.map((t) => {
           const neg = t.change24h < 0;
