@@ -34,7 +34,7 @@ function Shell({ native }: { native: boolean }) {
     >
       {showAside && (
         <aside className="lg:sticky lg:top-10 lg:w-[300px]">
-          <p className="text-[12px] font-semibold uppercase tracking-[0.16em] text-[#6B9CFF]">
+          <p className="text-[12px] font-semibold uppercase tracking-[0.16em] text-cb-link">
             Simulator
           </p>
           <h1 className="mt-2 text-3xl font-semibold">Coinbase-style LARP</h1>

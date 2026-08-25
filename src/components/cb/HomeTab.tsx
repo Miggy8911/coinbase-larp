@@ -2,7 +2,18 @@
 
 import type { ReactNode } from "react";
 import { useMemo, useState } from "react";
-import { ArrowDownLeft, ArrowUpRight, Bell, Minus, Plus, QrCode, Repeat2, Search } from "lucide-react";
+import {
+  ArrowDownLeft,
+  ArrowUpRight,
+  Bell,
+  ChevronDown,
+  ChevronUp,
+  Minus,
+  Plus,
+  QrCode,
+  Repeat2,
+  Search,
+} from "lucide-react";
 import { CoinbaseMark } from "../CoinbaseMark";
 import { AreaChart, Sparkline } from "../Sparkline";
 import { SmoothUsd } from "../SmoothUsd";
@@ -10,7 +21,8 @@ import { TokenGlyph } from "../TokenGlyph";
 import { mixChart, useLiveTrail } from "@/lib/chart-trail";
 import { useApp } from "@/lib/app-context";
 import { useHoldings } from "@/lib/quotes-store";
-import { cn, formatPct, formatPrice, formatUsd, portfolioSeries, sliceSpark } from "@/lib/utils";
+import { CB } from "@/lib/theme";
+import { cn, formatBalance, formatPct, formatPrice, portfolioSeries, sliceSpark } from "@/lib/utils";
 
 const PERIODS = [
   { id: "1H", frac: 1 / 168, change: "change1h" as const },
@@ -50,50 +62,63 @@ export function HomeTab() {
           Math.max(1, totalUsd - state.cashUsd)) *
         100;
   const down = periodChange < 0;
-  const line = down ? "#F0616D" : "#3DDC97";
+  const flat = Math.abs(periodChange) < 0.005 && Math.abs(dayChangeUsd) < 0.005;
+  const line = down ? CB.down : CB.up;
   const movers = [...tokens].sort((a, b) => Math.abs(b.change24h) - Math.abs(a.change24h)).slice(0, 5);
   const deltaUsd = meta.id === "1D" ? dayChangeUsd : (totalUsd * periodChange) / 100;
 
   return (
     <div className="scroll flex h-full flex-col pb-5">
       <header className="flex items-center justify-between px-4 pt-3">
-        <CoinbaseMark size={28} />
+        <CoinbaseMark size={32} />
         <div className="flex items-center gap-4">
           {state.showDisclaimers && (
-            <span className="text-[11px] text-white/40">{pricesLive ? marketSource : "offline"}</span>
+            <span className="text-[11px] text-cb-muted">{pricesLive ? marketSource : "offline"}</span>
           )}
           <button type="button" className="tap text-white" aria-label="Search">
-            <Search size={22} strokeWidth={2} />
+            <Search size={22} strokeWidth={1.8} />
           </button>
           <button type="button" onClick={() => setOverlay("receive")} className="tap text-white" aria-label="Scan">
-            <QrCode size={22} strokeWidth={2} />
+            <QrCode size={22} strokeWidth={1.8} />
           </button>
           <button type="button" onClick={() => setOverlay("profile")} className="tap text-white" aria-label="Alerts">
-            <Bell size={22} strokeWidth={2} />
+            <Bell size={22} strokeWidth={1.8} />
           </button>
           <button
             type="button"
             onClick={() => setOverlay("profile")}
-            className="tap flex h-8 w-8 items-center justify-center rounded-full bg-[#0052FF] text-[13px] font-semibold"
+            className="tap flex h-8 w-8 items-center justify-center rounded-full bg-cb-blue text-[13px] font-semibold"
           >
             {name.slice(0, 1).toUpperCase()}
           </button>
         </div>
       </header>
 
-      <p className="mt-5 px-4 text-[14px] text-white/55">Your balance</p>
-      <p className="px-4 text-[42px] font-semibold leading-none tracking-[-0.04em]">
-        <SmoothUsd value={totalUsd} />
+      <p className="mt-5 px-4 text-[14px] text-cb-muted">Your balance</p>
+      <p className="whitespace-nowrap px-4 text-[clamp(1.75rem,8.4vw,2.5rem)] font-semibold leading-none tracking-[-0.03em]">
+        <SmoothUsd value={totalUsd} balance />
       </p>
-      <p className={cn("mt-2 px-4 text-[16px] font-medium tabular-nums", down ? "text-[#F0616D]" : "text-[#3DDC97]")}>
-        {deltaUsd > 0 ? "+" : ""}
-        {formatUsd(deltaUsd)} ({formatPct(periodChange)})
+      <p
+        className={cn(
+          "mt-1.5 flex items-center gap-0.5 px-4 text-[16px] font-medium tabular-nums",
+          flat ? "text-cb-muted" : down ? "text-cb-down" : "text-cb-up"
+        )}
+      >
+        {!flat &&
+          (down ? (
+            <ChevronDown className="h-4 w-4 shrink-0" strokeWidth={2.6} />
+          ) : (
+            <ChevronUp className="h-4 w-4 shrink-0" strokeWidth={2.6} />
+          ))}
+        <span>
+          {formatBalance(Math.abs(deltaUsd))} ({Math.abs(periodChange).toFixed(2)}%)
+        </span>
       </p>
 
       <div className="mt-4">
         <AreaChart points={series} color={line} height={148} />
       </div>
-      <div className="mt-1 flex justify-between px-4 text-[13px] font-medium text-white/45">
+      <div className="mt-1 flex justify-between px-4 text-[13px] font-medium text-cb-muted">
         {PERIODS.map((p) => (
           <button
             key={p.id}
@@ -107,14 +132,14 @@ export function HomeTab() {
       </div>
 
       <div className="mt-6 grid grid-cols-5 gap-1 px-3">
-        <Round label="Buy" onClick={() => setOverlay("buy")} icon={<Plus size={20} strokeWidth={2.3} />} />
-        <Round label="Sell" onClick={() => setOverlay("sell")} icon={<Minus size={20} strokeWidth={2.3} />} />
-        <Round label="Convert" onClick={() => setOverlay("convert")} icon={<Repeat2 size={19} strokeWidth={2.2} />} />
-        <Round label="Send" onClick={() => setOverlay("send")} icon={<ArrowUpRight size={20} strokeWidth={2.2} />} />
+        <Round label="Buy" onClick={() => setOverlay("buy")} icon={<Plus size={22} strokeWidth={2.2} />} />
+        <Round label="Sell" onClick={() => setOverlay("sell")} icon={<Minus size={22} strokeWidth={2.2} />} />
+        <Round label="Convert" onClick={() => setOverlay("convert")} icon={<Repeat2 size={20} strokeWidth={2.1} />} />
+        <Round label="Send" onClick={() => setOverlay("send")} icon={<ArrowUpRight size={22} strokeWidth={2.1} />} />
         <Round
           label="Receive"
           onClick={() => setOverlay("receive")}
-          icon={<ArrowDownLeft size={20} strokeWidth={2.2} />}
+          icon={<ArrowDownLeft size={22} strokeWidth={2.1} />}
         />
       </div>
 
@@ -123,18 +148,23 @@ export function HomeTab() {
         <div className="rail mt-3 px-4 pb-1">
           {movers.map((t) => {
             const neg = t.change24h < 0;
+            const c = neg ? CB.down : CB.up;
             return (
               <button
                 key={t.id}
                 type="button"
                 onClick={() => openAsset(t.id)}
-                className="tap w-[138px] shrink-0 rounded-2xl bg-[#16181D] p-3 text-left"
+                className="tap w-[148px] shrink-0 rounded-2xl bg-cb-elev p-3 text-left"
               >
                 <TokenGlyph id={t.id} symbol={t.symbol} color={t.color} size={32} />
-                <p className="mt-2 text-[15px] font-medium">{t.symbol}</p>
-                <p className={cn("text-[15px] font-semibold tabular-nums", neg ? "text-[#F0616D]" : "text-[#3DDC97]")}>
+                <p className="mt-2.5 text-[15px] font-medium">{t.symbol}</p>
+                <p className="text-[14px] tabular-nums text-white">{formatPrice(t.priceUsd)}</p>
+                <p className={cn("text-[15px] font-semibold tabular-nums", neg ? "text-cb-down" : "text-cb-up")}>
                   {formatPct(t.change24h)}
                 </p>
+                <div className="mt-1">
+                  <Sparkline points={sliceSpark(t.sparkline, 0.25)} color={c} width={118} height={22} />
+                </div>
               </button>
             );
           })}
@@ -143,7 +173,7 @@ export function HomeTab() {
 
       <div className="mt-7 flex items-center justify-between px-4">
         <p className="text-[18px] font-semibold">Watchlist</p>
-        <button type="button" onClick={() => setTab("markets")} className="tap text-[14px] font-medium text-[#578BFA]">
+        <button type="button" onClick={() => setTab("markets")} className="tap text-[14px] font-medium text-cb-link">
           See all
         </button>
       </div>
@@ -160,12 +190,12 @@ export function HomeTab() {
                 <TokenGlyph id={t.id} symbol={t.symbol} color={t.color} />
                 <div className="min-w-0 flex-1">
                   <p className="text-[16px] font-medium">{t.name}</p>
-                  <p className="text-[13px] text-white/45">{t.symbol}</p>
+                  <p className="text-[13px] text-cb-muted">{t.symbol}</p>
                 </div>
-                <Sparkline points={sliceSpark(t.sparkline, 0.3)} color={neg ? "#F0616D" : "#3DDC97"} />
+                <Sparkline points={sliceSpark(t.sparkline, 0.3)} color={neg ? CB.down : CB.up} />
                 <div className="min-w-[88px] text-right">
                   <p className="text-[16px] font-medium tabular-nums">{formatPrice(t.priceUsd)}</p>
-                  <p className={cn("text-[13px] tabular-nums", neg ? "text-[#F0616D]" : "text-[#3DDC97]")}>
+                  <p className={cn("text-[13px] tabular-nums", neg ? "text-cb-down" : "text-cb-up")}>
                     {formatPct(t.change24h)}
                   </p>
                 </div>
@@ -181,10 +211,8 @@ export function HomeTab() {
 function Round({ label, onClick, icon }: { label: string; onClick: () => void; icon: ReactNode }) {
   return (
     <button type="button" onClick={onClick} className="tap flex flex-col items-center gap-2">
-      <span className="flex h-[52px] w-[52px] items-center justify-center rounded-full bg-[#1C1F26] text-white">
-        {icon}
-      </span>
-      <span className="text-[12px] text-white/85">{label}</span>
+      <span className="flex h-14 w-14 items-center justify-center rounded-full bg-cb-btn text-white">{icon}</span>
+      <span className="text-[12px] text-white">{label}</span>
     </button>
   );
 }

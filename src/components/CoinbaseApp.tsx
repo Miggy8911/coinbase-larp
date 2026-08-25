@@ -14,7 +14,7 @@ export function CoinbaseApp() {
   const { ready, state, tab, setTab, acceptDisclaimer } = useApp();
 
   return (
-    <div className="relative mx-auto flex h-[100dvh] w-full max-w-[430px] flex-col overflow-hidden overscroll-none bg-[#0A0B0D] pt-[env(safe-area-inset-top)] text-white [touch-action:pan-y]">
+    <div className="relative mx-auto flex h-[100dvh] w-full max-w-[430px] flex-col overflow-hidden overscroll-none bg-cb-bg pt-[env(safe-area-inset-top)] text-white [touch-action:pan-y]">
       {!ready ? (
         <div className="flex-1" />
       ) : !state.disclaimerSeen ? (
@@ -27,7 +27,7 @@ export function CoinbaseApp() {
           </p>
           <button
             type="button"
-            className="tap mt-8 h-12 rounded-full bg-[#0052FF] font-semibold"
+            className="tap mt-8 h-12 rounded-full bg-cb-blue font-semibold"
             onClick={acceptDisclaimer}
           >
             I understand
@@ -55,21 +55,21 @@ export function CoinbaseApp() {
             </div>
             <Overlays />
           </div>
-          <nav className="grid grid-cols-5 border-t border-white/8 bg-[#0A0B0D] px-1 pt-1 pb-[max(0.35rem,env(safe-area-inset-bottom))]">
+          <nav className="grid grid-cols-5 border-t border-white/[0.08] bg-cb-bg px-1 pt-1.5 pb-[max(0.4rem,env(safe-area-inset-bottom))]">
             <Nav active={tab === "home"} label="Home" onClick={() => setTab("home")}>
-              <Home size={22} />
+              <Home size={22} className={tab === "home" ? "fill-current" : undefined} strokeWidth={1.8} />
             </Nav>
             <Nav active={tab === "markets"} label="Explore" onClick={() => setTab("markets")}>
-              <Compass size={22} />
+              <Compass size={22} strokeWidth={1.8} />
             </Nav>
             <Nav active={tab === "trade"} label="Trade" onClick={() => setTab("trade")} accent>
-              <ArrowLeftRight size={20} />
+              <ArrowLeftRight size={22} strokeWidth={2.2} />
             </Nav>
             <Nav active={tab === "pay"} label="Pay" onClick={() => setTab("pay")}>
-              <Send size={22} />
+              <Send size={22} strokeWidth={1.8} />
             </Nav>
             <Nav active={tab === "assets"} label="Assets" onClick={() => setTab("assets")}>
-              <ChartPie size={22} />
+              <ChartPie size={22} className={tab === "assets" ? "fill-current" : undefined} strokeWidth={1.8} />
             </Nav>
           </nav>
         </>
@@ -96,15 +96,14 @@ function Nav({
       type="button"
       onClick={onClick}
       className={cn(
-        "tap flex flex-col items-center gap-0.5 text-[10px] transition-colors duration-150",
-        active ? "text-white" : "text-white/40"
+        "tap flex flex-col items-center gap-0.5 text-[10px] font-medium transition-colors duration-150",
+        active ? "text-white" : "text-cb-muted"
       )}
     >
       <span
         className={cn(
-          "flex items-center justify-center transition-transform duration-150",
-          accent ? "h-12 w-12 -mt-4 rounded-full bg-[#0052FF] text-white shadow-lg shadow-blue-900/40" : "h-7 w-7",
-          accent && !active && "opacity-90"
+          "flex items-center justify-center",
+          accent ? "h-14 w-14 -mt-6 rounded-full bg-cb-blue text-white" : "h-7 w-7"
         )}
       >
         {children}

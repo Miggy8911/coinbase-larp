@@ -1,16 +1,18 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { cn, formatPrice, formatUsd } from "@/lib/utils";
+import { cn, formatBalance, formatPrice, formatUsd } from "@/lib/utils";
 
 export function SmoothUsd({
   value,
   className,
   compact = true,
+  balance = false,
 }: {
   value: number;
   className?: string;
   compact?: boolean;
+  balance?: boolean;
 }) {
   const target = useRef(value);
   const current = useRef(value);
@@ -51,7 +53,7 @@ export function SmoothUsd({
 
   return (
     <span className={cn("tabular-nums", className)}>
-      {compact ? formatUsd(shown) : formatPrice(shown)}
+      {balance ? formatBalance(shown) : compact ? formatUsd(shown) : formatPrice(shown)}
     </span>
   );
 }

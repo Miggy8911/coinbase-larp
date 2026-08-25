@@ -20,13 +20,13 @@ export function TradeTab() {
   return (
     <div className="scroll flex h-full flex-col px-4 pt-4">
       <h1 className="text-[28px] font-semibold">Trade</h1>
-      <div className="mt-3 flex rounded-full bg-[#1e2026] p-1 text-[13px] font-semibold">
+      <div className="mt-3 flex rounded-full bg-cb-elev p-1 text-[13px] font-semibold">
         {(["buy", "sell", "convert"] as const).map((m) => (
           <button
             key={m}
             type="button"
             onClick={() => setMode(m)}
-            className={`tap flex-1 rounded-full py-2 capitalize ${mode === m ? "bg-[#0052FF]" : ""}`}
+            className={`tap flex-1 rounded-full py-2 capitalize ${mode === m ? "bg-cb-blue" : ""}`}
           >
             {m}
           </button>
@@ -54,7 +54,7 @@ export function TradeTab() {
           <Note className="mt-1 text-[12px] text-white/35">Pays from USD cash</Note>
           <button
             type="button"
-            className="tap mt-auto mb-4 h-12 rounded-full bg-[#0052FF] text-[15px] font-semibold"
+            className="tap mt-auto mb-4 h-12 rounded-full bg-cb-blue text-[15px] font-semibold"
             onClick={() => buyCrypto(tokenId, Number(usd) || 0)}
           >
             Buy {token?.symbol}
@@ -73,7 +73,7 @@ export function TradeTab() {
           )}
           <button
             type="button"
-            className="tap mt-auto mb-4 h-12 rounded-full bg-[#0052FF] text-[15px] font-semibold"
+            className="tap mt-auto mb-4 h-12 rounded-full bg-cb-blue text-[15px] font-semibold"
             onClick={() => sellCrypto(tokenId, Number(qty) || 0)}
           >
             Sell {token?.symbol}
@@ -100,7 +100,7 @@ export function TradeTab() {
           )}
           <button
             type="button"
-            className="tap mt-auto mb-4 h-12 rounded-full bg-[#0052FF] text-[15px] font-semibold"
+            className="tap mt-auto mb-4 h-12 rounded-full bg-cb-blue text-[15px] font-semibold"
             onClick={() => convert(tokenId, toId, Number(qty) || 0)}
           >
             Convert
@@ -121,14 +121,14 @@ export function PayTab() {
         <button
           type="button"
           onClick={() => setOverlay("send")}
-          className="tap h-12 rounded-full bg-[#0052FF] text-[14px] font-semibold"
+          className="tap h-12 rounded-full bg-cb-blue text-[14px] font-semibold"
         >
           Send
         </button>
         <button
           type="button"
           onClick={() => setOverlay("receive")}
-          className="tap h-12 rounded-full bg-[#1e2026] text-[14px] font-semibold"
+          className="tap h-12 rounded-full bg-cb-elev text-[14px] font-semibold"
         >
           Receive
         </button>

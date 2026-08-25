@@ -13,10 +13,10 @@ export function Overlays() {
   const { overlay, setOverlay, receipt, state } = useApp();
   if (overlay === "none") return null;
   return (
-    <div className="sheet-in absolute inset-0 z-30 flex flex-col overflow-hidden bg-[#0A0B0D]">
+    <div className="sheet-in absolute inset-0 z-30 flex flex-col overflow-hidden bg-cb-bg">
       <button
         type="button"
-        className="tap px-4 pt-3 text-left text-[14px] text-[#6B9CFF]"
+        className="tap px-4 pt-3 text-left text-[14px] font-medium text-cb-link"
         onClick={() => setOverlay("none")}
       >
         Close
@@ -41,7 +41,7 @@ function Hint({ goto }: { goto: string }) {
       <p className="text-[16px]">Use the Trade tab to {goto === "trade" ? "sell or convert" : goto}.</p>
       <button
         type="button"
-        className="tap mt-6 h-12 w-full rounded-full bg-[#0052FF] font-semibold"
+        className="tap mt-6 h-12 w-full rounded-full bg-cb-blue font-semibold"
         onClick={() => {
           setOverlay("none");
           setTab("trade");
@@ -81,7 +81,7 @@ function SendForm() {
       </p>
       <button
         type="button"
-        className="tap mt-auto mb-6 h-12 rounded-full bg-[#0052FF] text-[15px] font-semibold"
+        className="tap mt-auto mb-6 h-12 rounded-full bg-cb-blue text-[15px] font-semibold"
         onClick={() => sendCrypto(tokenId, Number(amount) || 0, to)}
       >
         Send now
@@ -113,7 +113,7 @@ function ReceiveForm() {
       <input className="field mt-2 tabular-nums" value={amount} onChange={(e) => setAmount(e.target.value)} />
       <button
         type="button"
-        className="tap mt-auto mb-6 h-12 rounded-full bg-[#0052FF] font-semibold"
+        className="tap mt-auto mb-6 h-12 rounded-full bg-cb-blue font-semibold"
         onClick={() => receiveCrypto(tokenId, Number(amount) || 0)}
       >
         Receive
@@ -144,7 +144,7 @@ function BuyForm() {
       </p>
       <button
         type="button"
-        className="tap mt-auto mb-6 h-12 rounded-full bg-[#0052FF] font-semibold"
+        className="tap mt-auto mb-6 h-12 rounded-full bg-cb-blue font-semibold"
         onClick={() => buyCrypto(tokenId, Number(usd) || 0)}
       >
         Buy
@@ -158,12 +158,12 @@ function Receipt() {
   if (!receipt) return null;
   return (
     <div className="flex flex-1 flex-col items-center px-6 pt-8 text-center">
-      <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#3DDC97] text-2xl text-black">✓</div>
+      <div className="flex h-16 w-16 items-center justify-center rounded-full bg-cb-up text-2xl text-white">✓</div>
       <h2 className="mt-4 text-[24px] font-semibold">{receipt.title}</h2>
       <p className="mt-1 text-[16px] tabular-nums">{receipt.amountLabel}</p>
-      <p className="mt-1 text-[13px] text-[#3DDC97]">{receipt.status}</p>
+      <p className="mt-1 text-[13px] text-cb-up">{receipt.status}</p>
       <p className="mt-1 text-[12px] text-white/45">{receipt.at}</p>
-      <div className="mt-6 w-full rounded-2xl bg-[#1e2026] p-4 text-left">
+      <div className="mt-6 w-full rounded-2xl bg-cb-elev p-4 text-left">
         <p className="text-[11px] uppercase tracking-wide text-white/40">Transaction ID</p>
         <p className="mt-1 break-all font-mono text-[12px]">{receipt.txId}</p>
         <p className="mt-3 text-[11px] text-white/40">{receipt.subtitle}</p>
@@ -172,7 +172,7 @@ function Receipt() {
       <Note className="mt-4 text-[12px] text-white/35">ID is generated on this device.</Note>
       <button
         type="button"
-        className="tap mt-auto mb-6 h-12 w-full rounded-full bg-[#0052FF] font-semibold"
+        className="tap mt-auto mb-6 h-12 w-full rounded-full bg-cb-blue font-semibold"
         onClick={() => setOverlay("none")}
       >
         Done
@@ -204,7 +204,7 @@ function Profile() {
   return (
     <div className="scroll flex-1 px-4 pt-2 pb-8">
       <h2 className="text-[22px] font-semibold">Account</h2>
-      <label className="mt-4 flex items-center justify-between gap-3 rounded-2xl bg-[#1e2026] px-4 py-3">
+      <label className="mt-4 flex items-center justify-between gap-3 rounded-2xl bg-cb-elev px-4 py-3">
         <span>
           <span className="block text-[14px]">Edit mode</span>
           <span className="mt-0.5 block text-[12px] text-white/45">Off hides balance tools</span>
@@ -213,18 +213,18 @@ function Profile() {
           type="checkbox"
           checked={state.editMode}
           onChange={(e) => setEditMode(e.target.checked)}
-          className="h-5 w-5 accent-[#0052FF]"
+          className="h-5 w-5 accent-cb-blue"
         />
       </label>
       {state.editMode ? (
         <>
-          <label className="mt-4 flex items-center justify-between gap-3 rounded-2xl bg-[#1e2026] px-4 py-3">
+          <label className="mt-4 flex items-center justify-between gap-3 rounded-2xl bg-cb-elev px-4 py-3">
             <span className="text-[14px]">Show simulator labels</span>
             <input
               type="checkbox"
               checked={state.showDisclaimers}
               onChange={(e) => setShowDisclaimers(e.target.checked)}
-              className="h-5 w-5 accent-[#0052FF]"
+              className="h-5 w-5 accent-cb-blue"
             />
           </label>
           <Note className="mt-2">Notices like “not real funds” stay hidden unless this is on.</Note>
@@ -248,10 +248,10 @@ function Profile() {
               {preview.cashUsd > 0 ? ` · USD ${((preview.cashUsd / Math.max(previewTotal, 1)) * 100).toFixed(0)}%` : ""}
             </p>
           ) : null}
-          {bagError ? <p className="mt-2 text-[12px] text-[#F0616D]">{bagError}</p> : null}
+          {bagError ? <p className="mt-2 text-[12px] text-cb-down">{bagError}</p> : null}
           <button
             type="button"
-            className="tap mt-3 h-11 w-full rounded-full bg-[#0052FF] font-semibold"
+            className="tap mt-3 h-11 w-full rounded-full bg-cb-blue font-semibold"
             onClick={() => {
               const n = parseMoney(bag);
               if (n == null) {
@@ -274,14 +274,14 @@ function Profile() {
           <input className="field" value={a.email} onChange={(e) => updateAccount({ email: e.target.value })} />
           <button
             type="button"
-            className="tap mt-6 h-11 w-full rounded-full bg-[#1e2026] font-semibold"
+            className="tap mt-6 h-11 w-full rounded-full bg-cb-elev font-semibold"
             onClick={() => setOverlay("balances")}
           >
             Edit balances
           </button>
           <button
             type="button"
-            className="tap mt-2 h-11 w-full rounded-full bg-[#3a1518] text-[#F0616D] font-semibold"
+            className="tap mt-2 h-11 w-full rounded-full bg-[#3a1518] text-cb-down font-semibold"
             onClick={() => {
               if (confirm("Reset balances and history?")) resetBag();
             }}

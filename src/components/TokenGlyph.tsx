@@ -20,7 +20,7 @@ export function TokenGlyph({
   if (FILES.has(key)) {
     return (
       <span
-        className="relative shrink-0 overflow-hidden rounded-full bg-[#1C1F26]"
+        className="relative shrink-0 overflow-hidden rounded-full bg-cb-elev"
         style={{ width: size, height: size }}
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}

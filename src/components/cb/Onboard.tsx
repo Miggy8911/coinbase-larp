@@ -29,7 +29,7 @@ export function Onboard() {
       <input className="field" value={email} onChange={(e) => setEmail(e.target.value)} />
       <button
         type="button"
-        className="tap mt-auto mb-6 h-12 rounded-full bg-[#0052FF] text-[15px] font-semibold"
+        className="tap mt-auto mb-6 h-12 rounded-full bg-cb-blue text-[15px] font-semibold"
         onClick={() =>
           createAccount({
             firstName: firstName.trim() || "Alex",

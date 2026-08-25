@@ -14,6 +14,17 @@ export function formatUsd(value: number, digits = 2) {
   return `${sign}$${abs.toLocaleString("en-US", { minimumFractionDigits: digits, maximumFractionDigits: digits })}`;
 }
 
+/** Full Coinbase-style cash amount. Never compact to $2.88M. */
+export function formatBalance(value: number) {
+  const n = Number.isFinite(value) ? value : 0;
+  return n.toLocaleString("en-US", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+}
+
 export function formatAmount(value: number) {
   if (value === 0) return "0";
   if (value >= 1_000_000) return value.toLocaleString("en-US", { maximumFractionDigits: 2 });
@@ -28,10 +39,13 @@ export function truncateAddress(address: string) {
 
 export function formatPrice(value: number) {
   if (!Number.isFinite(value)) return "$0.00";
-  if (value >= 1000) return formatUsd(value, 2);
-  if (value >= 1) return `$${value.toFixed(2)}`;
-  if (value >= 0.01) return `$${value.toFixed(4)}`;
-  return `$${value.toPrecision(3)}`;
+  const abs = Math.abs(value);
+  const sign = value < 0 ? "-" : "";
+  if (abs >= 1) {
+    return `${sign}$${abs.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  }
+  if (abs >= 0.01) return `${sign}$${abs.toFixed(4)}`;
+  return `${sign}$${Number(abs.toPrecision(3))}`;
 }
 
 export function formatPct(value: number) {
