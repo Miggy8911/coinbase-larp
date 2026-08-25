@@ -153,25 +153,22 @@ export function HomeTab() {
             const neg = t.change24h < 0;
             const c = neg ? CB.down : CB.up;
             return (
-              <button
-                key={t.id}
-                type="button"
-                onClick={() => openAsset(t.id)}
-                className="flex h-[168px] w-[148px] flex-col overflow-hidden rounded-2xl bg-cb-elev p-3.5 text-left active:opacity-70"
-              >
-                <TokenGlyph id={t.id} symbol={t.symbol} color={t.color} size={36} />
-                <p className="mt-3 truncate text-[15px] font-medium">{t.name}</p>
-                <p className={cn("text-[18px] font-semibold tabular-nums", neg ? "text-cb-down" : "text-cb-up")}>
-                  {formatPct(t.change24h)}
-                </p>
-                <div className="mt-auto">
-                  <Sparkline
-                    points={t.sparkline.slice(-Math.max(24, Math.floor(t.sparkline.length * 0.25)))}
-                    color={c}
-                    width={120}
-                    height={36}
-                  />
-                </div>
+              <button key={t.id} type="button" onClick={() => openAsset(t.id)} className="mover">
+                <span className="mover-face">
+                  <TokenGlyph id={t.id} symbol={t.symbol} color={t.color} size={36} />
+                  <span className="mt-3 block w-full truncate text-[15px] font-medium">{t.name}</span>
+                  <span className={cn("block text-[18px] font-semibold tabular-nums", neg ? "text-cb-down" : "text-cb-up")}>
+                    {formatPct(t.change24h)}
+                  </span>
+                  <span className="mt-auto block">
+                    <Sparkline
+                      points={t.sparkline.slice(-Math.max(24, Math.floor(t.sparkline.length * 0.25)))}
+                      color={c}
+                      width={120}
+                      height={36}
+                    />
+                  </span>
+                </span>
               </button>
             );
           })}

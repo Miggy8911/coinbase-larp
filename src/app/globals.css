@@ -69,7 +69,7 @@ select {
 
 .rail {
   display: flex;
-  align-items: stretch;
+  align-items: flex-start;
   gap: 0.5rem;
   overflow-x: auto;
   overflow-y: hidden;
@@ -79,9 +79,32 @@ select {
   scrollbar-width: none;
 }
 
-.rail > * {
-  flex: 0 0 auto;
+.rail > .mover {
+  flex: 0 0 148px;
+  width: 148px;
+  min-width: 148px;
+  max-width: 148px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
   touch-action: pan-x;
+}
+
+.mover:active .mover-face {
+  opacity: 0.72;
+}
+
+.glyph {
+  display: block;
+  flex: 0 0 auto;
+  overflow: hidden;
+  border-radius: 9999px;
+  background-color: #1e2025;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
 }
 
 .rail::-webkit-scrollbar {
