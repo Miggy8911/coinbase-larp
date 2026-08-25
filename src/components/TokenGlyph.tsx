@@ -17,28 +17,21 @@ export function TokenGlyph({
   size?: number;
 }) {
   const key = (id ?? symbol).toLowerCase();
+  const box: CSSProperties = { width: size, height: size, minWidth: size, minHeight: size };
   if (FILES.has(key)) {
     return (
-      <span
-        className="relative shrink-0 overflow-hidden rounded-full bg-cb-elev"
-        style={{ width: size, height: size }}
-      >
+      <span className="relative block shrink-0 overflow-hidden rounded-full bg-cb-elev" style={box}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={`/tokens/${key}.svg`} alt="" width={size} height={size} className="h-full w-full object-cover" />
+        <img src={`/tokens/${key}.svg`} alt="" width={size} height={size} className="block max-w-none" style={box} />
       </span>
     );
   }
-  const style: CSSProperties = {
-    width: size,
-    height: size,
-    background: color,
-  };
   return (
     <span
       className={cn(
         "flex shrink-0 items-center justify-center rounded-full text-[11px] font-semibold tracking-wide text-white"
       )}
-      style={style}
+      style={{ ...box, background: color }}
     >
       {symbol.slice(0, 3)}
     </span>

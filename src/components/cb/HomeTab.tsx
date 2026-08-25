@@ -64,7 +64,10 @@ export function HomeTab() {
   const down = periodChange < 0;
   const flat = Math.abs(periodChange) < 0.005 && Math.abs(dayChangeUsd) < 0.005;
   const line = down ? CB.down : CB.up;
-  const movers = [...tokens].sort((a, b) => Math.abs(b.change24h) - Math.abs(a.change24h)).slice(0, 5);
+  const movers = [...tokens]
+    .filter((t) => t.id !== "usdc" && t.id !== "usdt" && t.id !== "usd")
+    .sort((a, b) => Math.abs(b.change24h) - Math.abs(a.change24h))
+    .slice(0, 8);
   const deltaUsd = meta.id === "1D" ? dayChangeUsd : (totalUsd * periodChange) / 100;
 
   return (
@@ -154,16 +157,20 @@ export function HomeTab() {
                 key={t.id}
                 type="button"
                 onClick={() => openAsset(t.id)}
-                className="tap w-[148px] shrink-0 rounded-2xl bg-cb-elev p-3 text-left"
+                className="flex h-[168px] w-[148px] flex-col overflow-hidden rounded-2xl bg-cb-elev p-3.5 text-left active:opacity-70"
               >
-                <TokenGlyph id={t.id} symbol={t.symbol} color={t.color} size={32} />
-                <p className="mt-2.5 text-[15px] font-medium">{t.symbol}</p>
-                <p className="text-[14px] tabular-nums text-white">{formatPrice(t.priceUsd)}</p>
-                <p className={cn("text-[15px] font-semibold tabular-nums", neg ? "text-cb-down" : "text-cb-up")}>
+                <TokenGlyph id={t.id} symbol={t.symbol} color={t.color} size={36} />
+                <p className="mt-3 truncate text-[15px] font-medium">{t.name}</p>
+                <p className={cn("text-[18px] font-semibold tabular-nums", neg ? "text-cb-down" : "text-cb-up")}>
                   {formatPct(t.change24h)}
                 </p>
-                <div className="mt-1">
-                  <Sparkline points={sliceSpark(t.sparkline, 0.25)} color={c} width={118} height={22} />
+                <div className="mt-auto">
+                  <Sparkline
+                    points={t.sparkline.slice(-Math.max(24, Math.floor(t.sparkline.length * 0.25)))}
+                    color={c}
+                    width={120}
+                    height={36}
+                  />
                 </div>
               </button>
             );
